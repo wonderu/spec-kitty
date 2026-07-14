@@ -21,7 +21,7 @@
 |---|---|---|
 | `mark-status` | PRIMARY tasks tracking commit only; no status/lane/worktree delta | Zero durable delta; structured non-zero result if its own commit cannot land |
 | `move-task` | Expected status event/materialization plus PRIMARY WP commit; all owning refs clean | Zero durable delta when workspace readiness is required and unavailable; never success plus commit warning |
-| `agent action review` | Workspace ready first, then review claim/status and PRIMARY WP evidence through the existing partition-aware commit router | No claim event, WP mutation, ref movement, lock, created path, or dirt; invocation-owned recovery resources are compensated on later failure |
+| `agent action review` | Workspace ready first, then claim/status and WP evidence at their canonical placements; current placement is measured, not presumed | No claim event, WP mutation, ref movement, lock, created path, or dirt; invocation-owned recovery resources are compensated on later failure |
 
 ## Test Prohibitions
 
@@ -30,6 +30,8 @@ The acceptance witness may not monkeypatch any production symbol, Git/subprocess
 ## Disposition Record
 
 Every entry-point × workspace-state row records baseline SHA, exact argv, prerequisites, classification, RED/GREEN, all six before/after surfaces, reached owner, and `stop`/`continue`. Production changes are authorized only for RED/continue rows.
+
+If the review WP/status bundle is proven to land on the wrong authority, the row is a #2160-adjacent residual. The Mission records that relationship before implementation and uses the repository's canonical partition-aware commit seam; it does not claim that the current review coordination transaction already provides that behavior and does not close #2160.
 
 ## Output
 

@@ -92,7 +92,7 @@ No charter violations are planned.
 - **Relevant requirements**: FR-004, FR-005, FR-006, FR-009, C-001, C-002, C-003, C-008
 - **Affected surfaces**: `src/specify_cli/cli/commands/agent/workflow.py`, `workflow_executor.py`, `workspace/context.py`, and only proven lifecycle consumers
 - **Sequencing/depends-on**: IC-02 and IC-04 when the lifecycle row is RED; otherwise IC-02. Conditional on a review RED.
-- **Risks**: Readiness has two phases: non-mutating classify/validate, then invocation-owned recovery and lock. Any later failure releases the lock and removes only a worktree proven created by this invocation. Mixed WP/status commits continue through the existing partition-aware commit router; do not invent a second placement mechanism.
+- **Risks**: Readiness has two phases: non-mutating classify/validate, then invocation-owned recovery and lock. Any later failure releases the lock and removes only a worktree proven created by this invocation. The live review bookkeeping path currently sends the mixed WP/status bundle through one coordination transaction; the witness must classify that placement rather than assuming it already splits.
 
 ### IC-04 — Lifecycle missing-authority diagnostics
 
@@ -115,8 +115,9 @@ No charter violations are planned.
 1. Land IC-01 as a test-only commit. Parameterize healthy, matching-branch recoverable, branch-absent, and persisted-context-divergent states for each entry point using exact registered CLI argv and healthy positive-control twins.
 2. Produce the disposition matrix with baseline SHA, exact command, classification, RED/GREEN, six-surface delta, reached owner, and `stop`/`continue` for every row.
 3. If every row is green, stop production implementation. Mixed verdicts activate production work only for rows marked RED/continue.
-4. If lifecycle/reconciliation is RED, implement IC-04 first. If review ordering is RED, implement IC-03 after IC-04 when activated, otherwise directly after IC-02.
-5. Run IC-05 after every activated remediation concern, then independent WP review and Mission closeout while PR #2641 stays DRAFT.
+4. If a placement row is RED, record it explicitly as a #2160-adjacent residual in `issue-matrix.md` and the DRAFT PR before editing production code. The conditional fix must route through the existing canonical partition-aware commit seam rather than hand-rolling dual commits; it does not close or claim #2160.
+5. If lifecycle/reconciliation is RED, implement IC-04 first. If review ordering is RED, implement IC-03 after IC-04 when activated, otherwise directly after IC-02.
+6. Run IC-05 after every activated remediation concern, then independent WP review and Mission closeout while PR #2641 stays DRAFT.
 
 ## Acceptance Witness Matrix
 
@@ -134,7 +135,7 @@ Each argv runs against healthy, matching-branch/missing-worktree, branch-absent,
 
 1. **Classify without mutation**: reconcile persisted context with the current lane assignment and branch inventory into ready/recoverable/unavailable/divergent.
 2. **Acquire invocation-owned resources**: only a recoverable row may create/attach the worktree and acquire a review lock; record whether each resource was created by this invocation.
-3. **Claim/commit through existing authority**: the mixed WORK_PACKAGE_TASK/STATUS_STATE bundle continues through the existing partition-aware commit router, which splits genuinely divergent refs.
+3. **Claim/commit through observed authority**: the witness records where the current mixed WORK_PACKAGE_TASK/STATUS_STATE bundle lands. If canonical PRIMARY/COORD placement is RED, the activated remediation adapts the review path to the existing partition-aware commit seam; it does not pretend the current coordination transaction already splits the bundle.
 4. **Compensate post-readiness failure**: release invocation-owned locks and remove only an invocation-created worktree when a later claim/commit fails; never remove pre-existing resources.
 5. **Proceed**: pass the same reconciled workspace identity into lifecycle/review consumers; do not resolve or compose it again.
 
