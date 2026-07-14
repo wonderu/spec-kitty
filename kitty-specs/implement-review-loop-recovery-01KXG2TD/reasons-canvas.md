@@ -1,6 +1,6 @@
 # REASONS Canvas — Observable Pre-Review Gate
 
-> Mission: `implement-review-loop-recovery-01KXG2TD`  
+> Mission: `implement-review-loop-recovery-01KXG2TD`
 > Revised: 2026-07-14
 > Status: non-governing, exploratory, and advisory; the project charter and canonical Mission artifacts take precedence
 

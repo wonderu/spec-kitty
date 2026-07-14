@@ -1,9 +1,9 @@
 # Mission Specification: Observable Pre-Review Gate
 
-**Mission**: `implement-review-loop-recovery-01KXG2TD`  
-**Mission ID**: `01KXG2TDVPTZSYY58E578T5RX3`  
-**Type**: software-dev  
-**Status**: Draft  
+**Mission**: `implement-review-loop-recovery-01KXG2TD`
+**Mission ID**: `01KXG2TDVPTZSYY58E578T5RX3`
+**Type**: software-dev
+**Status**: Draft
 **Claimed implementation issue**: [#2573](https://github.com/Priivacy-ai/spec-kitty/issues/2573), limited to the residual default pre-review path described below
 
 ## Purpose

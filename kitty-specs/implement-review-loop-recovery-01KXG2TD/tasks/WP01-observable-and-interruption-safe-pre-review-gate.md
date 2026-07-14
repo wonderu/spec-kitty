@@ -40,7 +40,9 @@ subtasks:
 - T007
 phase: Phase 1 - Red-first implementation and verification
 assignee: ''
-agent: codex
+shell_pid_created_at: "1784035860.82"
+agent: "codex:default:reviewer-renata:reviewer"
+shell_pid: "664495"
 history:
 - at: '2026-07-14T12:16:35Z'
   actor: system
@@ -335,3 +337,10 @@ Use independent review execution and require concrete command output. Do not app
 ### Updating Status
 
 Status is managed through the append-only event log. Use canonical Spec Kitty action/status commands; do not edit lane fields in frontmatter.
+- 2026-07-14T12:31:13Z – codex:default:python-pedro:implementer – shell_pid=138606 – Assigned agent via action command
+- 2026-07-14T12:58:17Z – codex:default:python-pedro:implementer – shell_pid=138606 – Ready for review: observable typed gate lifecycle, pre-mutation interruption refusal, and focused compatibility evidence
+- 2026-07-14T12:59:02Z – codex:default:reviewer-renata:reviewer – shell_pid=138606 – Started review via action command
+- 2026-07-14T13:07:04Z – user – Moved to planned
+- 2026-07-14T13:08:54Z – codex:default:python-pedro:implementer – shell_pid=138606 – Started implementation via action command
+- 2026-07-14T13:29:56Z – codex:default:python-pedro:implementer – shell_pid=138606 – Cycle 2 ready: Windows descendant cleanup, complete refusal snapshots, and exact-command SIGKILL reconciliation validated
+- 2026-07-14T13:31:05Z – codex:default:reviewer-renata:reviewer – shell_pid=664495 – Started review via action command

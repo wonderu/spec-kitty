@@ -1,6 +1,6 @@
 # Specification Quality Checklist: Observable Pre-Review Gate
 
-**Purpose**: Validate specification completeness and quality before proceeding to planning  
+**Purpose**: Validate specification completeness and quality before proceeding to planning
 **Revised**: 2026-07-14
 **Mission**: [spec.md](../spec.md)
 
