@@ -76,8 +76,9 @@ must not assume the old defect still exists.
 This WP is the Mission's evidence gate. It owns only
 `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py`.
 Return the completed disposition matrix verbatim in the implementation handoff;
-the orchestrator persists it as a coordination-owned Mission artifact after
-review. Do not edit any file under `kitty-specs/` from the implementation lane.
+after review, the orchestrator persists it as a PRIMARY planning artifact through
+`spec-kitty spec-commit`. Do not edit any file under `kitty-specs/` from the
+implementation lane.
 
 Do not modify production code, `wps.yaml`, another WP prompt, existing test
 modules, or generated agent copies. If the fixture exposes a helper need, keep it
