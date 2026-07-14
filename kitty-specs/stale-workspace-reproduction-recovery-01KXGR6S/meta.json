@@ -12,5 +12,7 @@
   "purpose_tldr": "Reproduce and conditionally repair stale lane-workspace transition failures for #2626.",
   "slug": "stale-workspace-reproduction-recovery-01KXGR6S",
   "target_branch": "fix/stale-workspace-reproduction",
-  "topology": "lanes_with_coord"
+  "topology": "lanes_with_coord",
+  "vcs": "git",
+  "vcs_locked_at": "2026-07-14T16:52:52.456598+00:00"
 }

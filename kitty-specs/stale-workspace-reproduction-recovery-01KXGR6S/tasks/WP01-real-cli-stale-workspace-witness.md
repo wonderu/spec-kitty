@@ -27,7 +27,7 @@ subtasks:
 - T005
 phase: Phase 1 - Reproduction and disposition
 assignee: ''
-agent: codex
+shell_pid_created_at: "1784023781.31"
 history:
 - timestamp: '2026-07-14T00:00:00Z'
   agent: system
@@ -476,3 +476,10 @@ expresses the Mission contract rather than an incidental fixture detail.
 Finally, confirm the diff contains only the sole owned path, the witness commit is
 test/evidence-only, and later WPs can use the matrix without reinterpreting the
 historical issue report.
+
+## Activity Log
+
+- 2026-07-14T16:52:57Z – codex – shell_pid=138606 – Assigned agent via action command
+- 2026-07-14T17:09:23Z – codex – shell_pid=138606 – Ready for review: deterministic real-CLI stale-workspace witness; RED evidence preserved in 1902ce530
+- 2026-07-14T17:10:34Z – codex – shell_pid=138606 – Started review via action command
+- 2026-07-14T17:17:25Z – user – Moved to planned
