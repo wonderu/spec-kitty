@@ -4,7 +4,8 @@ work_packages:
     dependencies: []
     owned_files:
       - "tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py"
-      - "kitty-specs/stale-workspace-reproduction-01KXGNFM/disposition-matrix.md"
+    create_intent:
+      - "tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py"
     requirement_refs:
       - FR-001
       - FR-002
@@ -27,6 +28,7 @@ work_packages:
       - T003
       - T004
       - T005
+    prompt_file: "tasks/WP01-real-cli-stale-workspace-witness.md"
 
   - id: WP02
     title: "Conditional lifecycle reconciliation"
@@ -58,6 +60,7 @@ work_packages:
       - T008
       - T009
       - T010
+    prompt_file: "tasks/WP02-conditional-lifecycle-reconciliation.md"
 
   - id: WP03
     title: "Conditional review atomicity and verification"
@@ -98,3 +101,4 @@ work_packages:
       - T014
       - T015
       - T016
+    prompt_file: "tasks/WP03-conditional-review-atomicity-verification.md"
