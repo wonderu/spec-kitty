@@ -4,7 +4,7 @@
 **Date**: 2026-07-14
 **Mission**: `implement-review-loop-recovery-01KXG2TD` — Implement Review Loop Recovery
 **Mission number**: 178
-**Reviewed HEAD**: `365d337b5` plus the gate-result report commit
+**Reviewed tree**: final Mission implementation before landing-history cleanup
 **WPs reviewed**: WP01
 
 ## Final Verdict
@@ -27,7 +27,7 @@ The merged implementation's spec-to-code fidelity is **PASS**. All Mission-attri
 - Result: **FAIL**
 - Evidence: 1000 passed, 4 skipped, 1 failed in 668.44 seconds.
 - Remaining failure: `test_surface_resolution_audit.py::test_audit_passes_on_current_tree` reports an inventory undercount for `_wp04_bite_witness` only under the parallel suite; its exact serial test passes. This planning-base isolation defect is tracked by [#2638](https://github.com/Priivacy-ai/spec-kitty/issues/2638).
-- Mission remediation: `d86c503f5` replaced the invalid `fast` marker on the new Git-subprocess test module with `git_repo`; both marker-correctness tests and the affected observability module pass.
+- Mission remediation: the final implementation commit replaces the invalid `fast` marker on the new Git-subprocess test module with `git_repo`; both marker-correctness tests and the affected observability module pass.
 
 ### Gate 3 — Cross-Repo E2E
 
@@ -60,7 +60,7 @@ The merged implementation's spec-to-code fidelity is **PASS**. All Mission-attri
 
 ## Review-History Resolution
 
-Cycle 1 correctly rejected Windows direct-child-only cleanup, incomplete residue coverage, and a vacuous SIGKILL test. The implementation folded into `c248c9cd8` closes all three findings. Cycle 1 remains preserved as `verdict: rejected`; `review-cycle-2.md` records the independent approval as `verdict: approved`. Canonical status now reports WP01 done without stale-verdict warnings.
+Cycle 1 correctly rejected Windows direct-child-only cleanup, incomplete residue coverage, and a vacuous SIGKILL test. The final implementation commit closes all three findings. Cycle 1 remains preserved as `verdict: rejected`; `review-cycle-2.md` records the independent approval as `verdict: approved`. Canonical status now reports WP01 done without stale-verdict warnings.
 
 ## Risk and Scope Verdict
 

@@ -23,6 +23,6 @@ Independent cycle-2 review passed all acceptance criteria and the contract round
 - Windows descendant cleanup uses tree-aware `taskkill /T` with bounded `/T /F` escalation and platform-shaped branch tests.
 - Timeout and catchable-cancellation residue snapshots cover authoritative state, event logs, WP bytes, Git placement, and owned dirty paths across primary, coordination, and lane checkouts.
 - SIGKILL coverage terminates the actual Typer command while it is synchronized inside the real pre-review gate, reaps the orphaned runner child, and reconciles against authoritative status.
-- Historical RED commit `808290927` remains test-only; its liveness assertion was not weakened.
+- The dedicated RED commit remains test-only; its liveness assertion was not weakened.
 
 This approval supersedes the cycle-1 rejection without deleting or rewriting that review history.

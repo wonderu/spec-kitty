@@ -38,7 +38,7 @@ Run the exact command in an isolated child, synchronize so the child is inside t
 
 ## Verified evidence retained
 
-- The RED commit `8082909273853bd5e89c53543337d87a2954ca97` contains only the exact Typer acceptance test. Independently applying it to its untouched parent produced the intended failure: zero `still running` messages versus the unchanged `>= 2` assertion.
+- The dedicated RED commit contains only the exact Typer acceptance test. Running it against the untouched base produced the intended failure: zero `still running` messages versus the unchanged `>= 2` assertion.
 - The implementation-focused suite passed independently: 72 tests.
 - Ruff, mypy, the terminology guard, and `git diff --check` passed.
 

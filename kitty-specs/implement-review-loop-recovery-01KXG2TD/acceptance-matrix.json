@@ -1,6 +1,6 @@
 {
   "mission_slug": "implement-review-loop-recovery-01KXG2TD",
-  "mission_number": null,
+  "mission_number": 178,
   "mission_type": "software-dev",
   "overall_verdict": "pass",
   "criteria": [
@@ -18,7 +18,7 @@
       "criterion_id": "FR-002",
       "description": "Human mode emits bounded ongoing liveness while the gate remains active.",
       "proof_type": "automated_test",
-      "evidence": "tests/specify_cli/cli/commands/agent/test_tasks_move_task_pre_review_gate_observability.py; RED commit 808290927 and GREEN commit eb939d7ff",
+      "evidence": "tests/specify_cli/cli/commands/agent/test_tasks_move_task_pre_review_gate_observability.py; dedicated RED regression-test commit followed by the final GREEN implementation commit",
       "pass_fail": "pass",
       "verified_by": "codex:default:reviewer-renata:reviewer",
       "verified_at": "2026-07-14T13:35:00Z",
