@@ -52,6 +52,8 @@ owned_files:
 role: implementer
 tags: []
 shell_pid_created_at: "1784023781.31"
+shell_pid: "138606"
+agent: "codex"
 ---
 
 # WP02 — Conditional Task-Command and Placement Remediation
@@ -317,3 +319,7 @@ test-only commit and review handoff.
 - 2026-07-14T17:46:04Z – codex – shell_pid=138606 – Assigned agent via action command
 - 2026-07-14T17:50:32Z – codex – shell_pid=138606 – Blocked: authorized rows 6-8 require post-fix assertions in tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py, but that external WP01 witness is absent from WP02 owned_files. The unchanged test hard-codes exit 0, durable mutations, and missing path for all stale move-task states, so recoverable success-with-recreated-path and unavailable/divergent atomic refusal cannot pass without editing an undeclared path. Requires plan ownership amendment/refinalization.
 - 2026-07-14T17:52:09Z – user – Planning amendment required: sequential acceptance-witness ownership omitted from WP02/WP04
+- 2026-07-14T18:22:46Z – codex – shell_pid=138606 – Assigned agent via action command
+- 2026-07-14T18:33:37Z – codex – shell_pid=138606 – Ready for review: rows 6-8 enforce recoverable reattachment and atomic unavailable/divergent refusal; Charter exception: WP01 canonically approved or done, inactive, and with a clean dependency lane; witness rows 6-8 only; frozen harness, serial writer, no topology recomputation.
+- 2026-07-14T18:34:15Z – codex – shell_pid=138606 – Started review via action command
+- 2026-07-14T18:43:18Z – user – shell_pid=138606 – Independent review approved: ATDD 3acc4bacc RED then 8289cf39 GREEN for exact move-task recoverable/unavailable/divergent nodes; frozen witness surfaces unchanged; 70 focused tests, Ruff, strict mypy, and 11 architectural checks passed; complete matrix is 8 green task/mark rows plus 4 intentional WP04 review REDs. Approved witness blob 48ca83d8091dde8cd288fc7905ea6c128aec62f8 at 8289cf39.
