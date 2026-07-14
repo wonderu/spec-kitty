@@ -566,3 +566,7 @@ canonical placement all tell the same story.
 - 2026-07-14T19:18:48Z – codex – shell_pid=138606 – Ready for independent review: atomic review workspace preparation and partition-aware claim commit; exact rows 9-12 and full acceptance witness green.
 - 2026-07-14T19:20:12Z – codex – shell_pid=138606 – Started review via action command
 - 2026-07-14T19:27:56Z – user – Moved to planned
+- 2026-07-14T19:29:23Z – codex – shell_pid=138606 – Assigned agent via action command
+- 2026-07-14T19:42:29Z – codex – shell_pid=138606 – Ready for independent re-review: both placement refs proven from pre-emission hashes; partial outcomes refused; invocation cleanup ownership and failure precedence covered.
+- 2026-07-14T19:43:14Z – codex – shell_pid=138606 – Started review via action command
+- 2026-07-14T19:45:17Z – user – Moved to planned
