@@ -165,7 +165,8 @@ or an activated RED→GREEN implementation sequence.
    - `ACTIVATED/RED`: list only the RED/continue rows owned by this WP.
 6. On `NO-OP/GREEN`, compare both owned files before and after to prove they are
    byte-identical, run no formatting command, create no empty cleanup commit, and
-   skip all production-edit steps in T016–T018.
+   skip all production-edit steps in T012–T014; T015 still runs the no-op
+   verification and handoff.
 7. On `ACTIVATED/RED`, preserve the exact failing assertion as the acceptance
    witness. Do not weaken it, replace it with a helper-only test, or extend scope
    to an adjacent issue.
@@ -174,7 +175,8 @@ or an activated RED→GREEN implementation sequence.
 
 **Files**:
 
-- Read only: WP02 disposition, WP01 witness, and Mission contract artifacts.
+- Read only: the orchestrator-committed reviewed disposition, WP01 witness, and
+  Mission contract artifacts.
 - On the no-op path: no files modified.
 - On the activated path: subsequent subtasks may modify only the two owned files.
 
@@ -187,7 +189,7 @@ or an activated RED→GREEN implementation sequence.
 
 ### Subtask T012: Add canonical readiness classification only for a proven RED
 
-**Purpose**: If and only if T006 activates remediation, close the demonstrated
+**Purpose**: If and only if T011 activates remediation, close the demonstrated
 lifecycle defect by classifying readiness before cwd-bound Git work. Keep the
 classification inside the existing authority rather than creating a second
 resolver or general recovery service.
@@ -381,7 +383,7 @@ scope or relying on retry-to-green.
 8. On the no-op path, do not manufacture RED/GREEN history. Report WP01's GREEN
    baseline evidence, the empty owned-file diff, and skipped-as-not-applicable
    production checks explicitly.
-9. Provide the reviewer with exact commands/results and the T006 disposition. Do
+9. Provide the reviewer with exact commands/results and the T011 disposition. Do
    not post step-by-step issue comments; Mission evidence belongs in the DRAFT PR.
 
 **Files**:
@@ -402,7 +404,7 @@ scope or relying on retry-to-green.
 - [ ] The canonical implement action returned the lane workspace and all work ran
       from that resolved location on the Mission branch contract.
 - [ ] WP02 is approved/done and the reviewed lifecycle-owned disposition rows were consumed.
-- [ ] T006 records exactly one outcome: `NO-OP/GREEN` or `ACTIVATED/RED`.
+- [ ] T011 records exactly one outcome: `NO-OP/GREEN` or `ACTIVATED/RED`.
 - [ ] No production change exists without a lifecycle-owned RED/continue row.
 - [ ] On no-op, both owned files remain byte-identical and evidence explains why.
 - [ ] On activation, a separate real-Git test-only commit proves RED first.
@@ -420,7 +422,7 @@ scope or relying on retry-to-green.
 ## Risks
 
 - **Speculative remediation**: the historical recoverable arm may already be
-  correct. Mitigation: T006 makes WP01 RED/continue evidence a hard activation
+  correct. Mitigation: T011 makes reviewed RED/continue evidence a hard activation
   gate and treats no-op as complete.
 - **Duplicate workspace authority**: recomputing path or branch in lifecycle sync
   can disagree with persisted/current identity. Mitigation: consume one resolved
@@ -440,7 +442,7 @@ scope or relying on retry-to-green.
 
 ## Reviewer Guidance
 
-Review T006 before reading the code diff. If no lifecycle-owned RED/continue row
+Review T011 before reading the code diff. If no lifecycle-owned RED/continue row
 exists, reject any production change regardless of how reasonable it appears.
 For an activated implementation, independently replay the test-only commit on its
 recorded base and verify the exact witness is RED for the same reason, then replay

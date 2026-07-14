@@ -5,6 +5,7 @@ dependencies:
 - WP01
 requirement_refs:
 - FR-003
+- FR-004
 - FR-005
 - FR-006
 - FR-007
@@ -12,7 +13,10 @@ requirement_refs:
 - FR-009
 - NFR-002
 - NFR-003
+- NFR-004
 - C-001
+- C-002
+- C-003
 - C-004
 - C-005
 - C-006

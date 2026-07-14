@@ -334,9 +334,10 @@ materialized.
 ### Subtask T005: Publish the disposition matrix and enforce the RED gate
 
 **Purpose**: Convert raw witness results into the authoritative implementation
-decision for the orchestrator checkpoint. Production changes are allowed only after
-the independently reviewed rows are persisted with `spec-kitty spec-commit`
-is RED and marked `continue`; already-correct behavior is documented and stopped.
+decision for the orchestrator checkpoint. Production changes are allowed only
+after independent review, an orchestrator `spec-kitty spec-commit`, and a
+row-specific `RED/continue` verdict; already-correct behavior is documented and
+stopped.
 
 **Steps**:
 
@@ -388,8 +389,8 @@ is RED and marked `continue`; already-correct behavior is documented and stopped
 
 - Finalize the sole owned witness test module.
 - Return the disposition matrix in the implementation handoff (expected 80-180
-  lines, depending on row count and evidence density); WP02 owns its reviewed,
-  durable Mission-artifact write.
+  lines, depending on row count and evidence density); the orchestrator owns its
+  independently reviewed, durable `spec-kitty spec-commit` checkpoint.
 
 **Validation**:
 

@@ -355,7 +355,7 @@ recording the finding as adjacent to #2160 rather than claiming or closing it.
 
 - Production edits remain limited to `workflow.py` and `workflow_executor.py`.
 - Focused placement assertions belong in `test_workflow_review_lane_gate.py`.
-- `issue-matrix.md` is WP02-owned, reviewed read-only input; PR progress is
+- `issue-matrix.md` is orchestrator-owned, reviewed read-only input; PR progress is
   orchestrator-owned follow-through, not a WP04 file edit.
 
 **Validation**:
