@@ -29,14 +29,21 @@
         "WP02"
       ],
       "write_scope": [
-        "src/specify_cli/lanes/lifecycle_sync.py",
-        "tests/integration/test_lane_lifecycle_sync.py"
+        "src/specify_cli/cli/commands/agent/tasks_mark_status.py",
+        "src/specify_cli/cli/commands/agent/tasks_move_task.py",
+        "src/specify_cli/cli/commands/agent/tasks_parsing_validation.py",
+        "src/specify_cli/coordination/commit_router.py",
+        "tests/specify_cli/cli/commands/agent/test_tasks_mark_status.py",
+        "tests/specify_cli/cli/commands/agent/test_tasks_mark_status_seam.py",
+        "tests/specify_cli/cli/commands/agent/test_tasks_move_task_authority_staging.py",
+        "tests/specify_cli/cli/commands/agent/test_tasks_move_task_placement.py",
+        "tests/specify_cli/cli/commands/agent/test_tasks_move_task_seam.py",
+        "tests/specify_cli/coordination/test_commit_router_partition.py",
+        "tests/specify_cli/coordination/test_commit_router_placement.py"
       ],
       "predicted_surfaces": [
         "api",
         "artifact-rendering",
-        "legacy-cleanup",
-        "tests",
         "tracker-integration",
         "workspace"
       ],
@@ -51,6 +58,28 @@
         "WP03"
       ],
       "write_scope": [
+        "src/specify_cli/lanes/lifecycle_sync.py",
+        "tests/integration/test_lane_lifecycle_sync.py"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup",
+        "tests",
+        "tracker-integration",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
         "src/specify_cli/cli/commands/agent/workflow.py",
         "src/specify_cli/cli/commands/agent/workflow_executor.py",
         "tests/agent/test_workflow_review_lane_gate.py",
@@ -63,13 +92,12 @@
         "workspace"
       ],
       "depends_on_lanes": [
-        "lane-a",
-        "lane-b"
+        "lane-c"
       ],
-      "parallel_group": 2
+      "parallel_group": 3
     }
   ],
-  "computed_at": "2026-07-14T16:22:49.038121+00:00",
+  "computed_at": "2026-07-14T16:37:08.802766+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": []
 }

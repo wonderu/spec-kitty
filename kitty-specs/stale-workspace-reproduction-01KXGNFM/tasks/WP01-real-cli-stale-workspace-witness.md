@@ -182,7 +182,7 @@ operator uses and cannot false-green by calling helper functions directly.
 3. Pin the exact `move-task` argv:
 
    ```text
-   agent tasks move-task WP01 --to for_review --mission <slug> --agent codex --skip-pre-review-gate --json
+   agent tasks move-task WP01 --to for_review --mission <slug> --agent codex --json
    ```
 
    Prerequisites: WP01 is `in_progress`; every subtask is complete; a genuine
@@ -334,7 +334,8 @@ materialized.
 ### Subtask T005: Publish the disposition matrix and enforce the RED gate
 
 **Purpose**: Convert raw witness results into the authoritative implementation
-decision for WP02/WP03. Production changes are allowed only where a concrete row
+decision for the orchestrator checkpoint. Production changes are allowed only after
+the independently reviewed rows are persisted with `spec-kitty spec-commit`
 is RED and marked `continue`; already-correct behavior is documented and stopped.
 
 **Steps**:
@@ -362,8 +363,9 @@ is RED and marked `continue`; already-correct behavior is documented and stopped
    - **RED/continue**: current behavior violates an explicit contract assertion;
      name the failing assertion and the existing owning seam reached by the CLI;
    - fixture/setup failure: neither RED nor GREEN; repair the witness and rerun.
-4. If all rows are GREEN, state that WP02 and WP03 production implementation must
-   stop unless their prompts contain independently activated evidence work. Do not
+4. If all rows are GREEN, state that WP02, WP03, and WP04 production implementation
+   must remain no-op unless their prompts contain independently activated evidence
+   work. Do not
    manufacture a fix to make the Mission look substantive.
 5. If verdicts are mixed, identify only the RED/continue rows and their proven
    owners. Do not generalize one review failure into `mark-status` or `move-task`.
@@ -386,8 +388,8 @@ is RED and marked `continue`; already-correct behavior is documented and stopped
 
 - Finalize the sole owned witness test module.
 - Return the disposition matrix in the implementation handoff (expected 80-180
-  lines, depending on row count and evidence density); the orchestrator owns its
-  later Mission-artifact write.
+  lines, depending on row count and evidence density); WP02 owns its reviewed,
+  durable Mission-artifact write.
 
 **Validation**:
 
@@ -469,6 +471,6 @@ authorized by GREEN behavior. If a RED is claimed, reproduce it on the pinned
 planning base with the exact focused command and verify that the failing assertion
 expresses the Mission contract rather than an incidental fixture detail.
 
-Finally, confirm the diff contains only the two owned paths, the witness commit is
+Finally, confirm the diff contains only the sole owned path, the witness commit is
 test/evidence-only, and later WPs can use the matrix without reinterpreting the
 historical issue report.
