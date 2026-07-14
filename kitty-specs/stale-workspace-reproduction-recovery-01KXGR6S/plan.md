@@ -152,7 +152,7 @@ WP03, or any adjacent-ticket mechanism.
 - **Relevant requirements**: FR-011, FR-015, C-013, C-014
 - **Affected surfaces**: `coordination/types.py`, `transaction.py`, `status_transition.py`, `commit_router.py`, `git/commit_helpers.py`, receipt-producer architectural gate
 - **Sequencing/depends-on**: IC-07 transaction/attempt identity
-- **Design**: `PlacementCommitReceipt` is the sole class. `CommitReceipt = PlacementCommitReceipt` preserves exact class identity for compatibility. Receipt contains invocation/transaction IDs, destination ref, lock-held `before_sha`, commit SHA, worktree, committed diff-tree paths, and event IDs. `PlacementCommitFailure` carries the complete receipt plus recovery diagnostics. The initial shrink-only producer-gate baseline includes reviewed legacy/current constructors and the new Git-to-coordination adapter sites; no workflow producer is permitted.
+- **Design**: The final state has `PlacementCommitReceipt` as the sole class and `CommitReceipt = PlacementCommitReceipt` preserving exact class identity. Receipt contains invocation/transaction IDs, destination ref, lock-held `before_sha`, commit SHA, worktree, committed diff-tree paths, and event IDs. `PlacementCommitFailure` carries the complete receipt plus recovery diagnostics. Wave A temporarily preserves the byte-compatible legacy `CommitReceipt` class as a distinct constructor while adding the future data types; B1 atomically switches the alias only with migration of every canonical producer/adapter. The final shrink-only producer-gate baseline includes the migrated legacy/current producers and new Git-to-coordination adapter sites; no workflow producer is permitted.
 - **Git evidence seam**: `safe_commit` gains an additive composite-deferral mode returning Git-owned generic pending `LocalCommit` plus post-commit caller-recovery evidence. Default non-composite behavior remains byte-compatible. Git modules do not import `coordination.types`; placement owners adapt Git evidence into the canonical coordination receipt/failure.
 - **Risks**: `safe_commit` temporarily touches unrelated caller index/worktree state. Snapshot and verify every affected staged, unstaged, and untracked path, including unrelated sentinels.
 
@@ -180,25 +180,35 @@ WP03, or any adjacent-ticket mechanism.
 
 Start from preserved `980eae6a9`, `eaff3130c`, and the two approved WP04 review
 artifacts. IC-01–IC-06 and rows 1–8 remain immutable historical evidence. Rejected
-commits `7e8f6f579` and `52d5f02ab` are retained in Git history only as
+commits `7e8f6f579`, `52d5f02ab`, and scaffold `98ccc4dc` are retained in Git history only as
 non-authorizing discovery evidence: their code, test expectations, green results,
 and producer assumptions do not satisfy any amendment gate and MUST NOT be copied
-forward as reviewed design. Before Wave A, one test-only correction commit MAY
+forward as reviewed design. `98ccc4dc` is specifically rejected because switching
+`CommitReceipt` to the expanded exact alias before migrating
+`BookkeepingTransaction.commit` breaks the existing canonical transaction producer.
+Its defect MUST be remediated test-first in the corrected Wave A sequence before B1;
+neither its commit nor an incidental green may authorize implementation. Before the
+corrected Wave A, one test-only correction commit MAY
 replace or delete test scaffolding introduced by those rejected commits. That
 correction commit cannot edit production, relax a preserved assertion, or claim RED
 evidence; its name-status and assertion/fixture audit become part of the handoff.
 
 ### Wave A — API, type, and port discovery
 
-1. Land a test-only API/type/port RED commit. It specifies the exact
-   `PlacementCommitReceipt` identity and `CommitReceipt` alias, typed
+1. Land a test-only API/type/port and rejected-scaffold-remediation RED commit. It
+   specifies the full future `PlacementCommitReceipt`, typed
    `PlacementCommitFailure`, composite result vocabulary, Mission Management entry
-   signature, owner ports, and the producer/import boundaries. It contains no
-   implementation and does not attempt a transaction.
+   signature, owner ports, producer/import boundaries, and a regression proving the
+   existing `BookkeepingTransaction.commit` constructor remains byte-compatible and
+   usable during Wave A. Wave A explicitly does **not** assert exact alias identity or
+   authorize the alias switch. It contains no implementation and does not attempt a
+   composite transaction.
 2. Land a separate runtime-mutation-free scaffold commit limited to exactly:
    - `src/specify_cli/coordination/types.py`: data-only
-     `PlacementCommitReceipt`, exact `CommitReceipt = PlacementCommitReceipt` alias,
-     and data-only `PlacementCommitFailure`;
+     full `PlacementCommitReceipt` and data-only `PlacementCommitFailure`, while
+     preserving the existing legacy `CommitReceipt` class, fields, constructor,
+     behavior, and class identity byte-compatible and distinct from
+     `PlacementCommitReceipt`;
    - `src/specify_cli/status/review_transaction.py`: enums, frozen dataclasses,
      protocols, the public entry signature, and
      `CompositeImplementationUnavailable`.
@@ -208,7 +218,9 @@ evidence; its name-status and assertion/fixture audit become part of the handoff
    or entering a retry. It MUST NOT return a terminal composite result. Wave A adds
    no `__init__.py` export, workflow wiring, Git/status/router/outbound call, hidden
    fallback, or compatibility execution path. Its only green evidence is API/type/
-   import/producer shape plus proof that the unavailable sentinel is mutation-free.
+   import/producer shape, legacy transaction-producer regression, distinct interim
+   class identities, plus proof that the unavailable sentinel is mutation-free. The
+   final FR-011 exact-alias outcome is unchanged but deferred wholly to B1.
 
 ### Wave B — vertical semantic slices
 
@@ -219,6 +231,20 @@ preceding RED; broad horizontal implementation of a later slice is prohibited.
 Production owners are never monkeypatched. Repository hooks and independent fixture
 helpers are stimuli only: they coordinate or inject the external condition, while
 assertions must observe the real named production owner and boundary.
+
+Every filesystem mutation probe MUST be isolated from the real lane/repository.
+Scanners and architectural gates used by these tests accept an explicit root/path.
+The fixture copies the declared committed preimage plus only the minimal required
+package tree and configuration into a collision-safe unique temporary root, injects
+the unauthorized producer/import/signature mutation only in that disposable copy,
+runs the gate against the explicit temporary root, and proves rejection. Cleanup
+deletes the temporary root; unique naming and cleanup remain safe under overlapping
+processes. Because parallel probes share no mutable paths, they require no
+serialization lock. Assert the canonical source hash equals the declared committed
+preimage both before and after every probe. The real production bytes are never
+modified, so assertion failure, process crash, SIGKILL, overlapping gates, and normal
+parallel readers cannot observe injected bytes. Shared-lane in-place mutation plus a
+lock/`finally` restore is prohibited and is not interruption-safety evidence.
 
 1. **B1 — first-terminal foundation**
    - Test-only RED: pin the entire minimum contract required before any truthful local
@@ -241,6 +267,12 @@ assertions must observe the real named production owner and boundary.
        records zero persistence/send/delivery attempts;
      - additive composite deferral leaves default non-composite safe-commit and
        `LocalCommit` behavior byte-compatible.
+     - the final FR-011 switch `CommitReceipt is PlacementCommitReceipt`, migration of
+       **all** existing canonical receipt producers/adapters to the expanded constructor,
+       the current `BookkeepingTransaction.commit` producer regression, the final
+       non-vacuous shrink-only AST producer set, and both complete PRIMARY and COORD
+       success adapters. The RED must prove the alias switch cannot pass independently
+       of the complete producer migration.
      Instrument the real boundaries. On the Wave A unavailable path, assert zero lock,
      owner, ref, lower-seam commit, outbound, and retry calls. The initial B1 RED MAY
      fail at `CompositeImplementationUnavailable`; no committed/refused expectation is
@@ -248,10 +280,16 @@ assertions must observe the real named production owner and boundary.
    - Behavior: implement only that foundation: prepare, the additive Git-owned deferred
      `LocalCommit` evidence mode, pre-mutation named-channel staging/disposition,
      canonical resource→feature-status→Git lock order, real owner invocation, both
-     complete canonical PRIMARY and COORD success
-     Git-evidence→receipt adapters, receipt/identity/result evaluation, and typed
+     complete canonical PRIMARY and COORD success Git-evidence→receipt adapters,
+     atomic migration of every existing canonical producer/adapter to the full
+     `PlacementCommitReceipt` constructor, and only then in the same commit replace the
+     legacy class with exact `CommitReceipt = PlacementCommitReceipt`. There MUST be no
+     intermediate commit where the alias has switched but any legacy constructor call
+     remains. Finish the non-vacuous shrink-only producer allowlist in this same
+     behavior commit, plus receipt/identity/result evaluation and typed
      `committed`, `refused`, or indeterminate `compensation_failed` outcomes. **B1
-     wholly and solely owns both success adapters.** The lifecycle seam consumes the
+     wholly and solely owns the exact-alias switch, complete producer migration, final
+     producer set, and both success adapters.** The lifecycle seam consumes the
      already-held status lock and transaction without reacquisition or implicit commit.
      No retry, compensation, persistence/send, or delivery executes in B1; it creates
      and disposes only pending evidence, and non-success always records zero attempts.
@@ -408,7 +446,7 @@ PASS: the design preserves canonical authorities, uses RED-first evidence, keeps
 
 - **Nested-lock/deadlock risk**: Mission Management is the sole outer lock holder; receipt-returning lower seams accept the active transaction instead of reacquiring the same lock.
 - **Lock-order invariant**: workspace/resource → feature-status → Git worktree/index. `BookkeepingTransaction` operates inside the already-held feature-status scope; there is no separate transaction or composite lock. Expected-old CAS remains under the feature lock.
-- **Type-identity drift risk**: `CommitReceipt` is an alias to `PlacementCommitReceipt`, and the architectural gate covers all baseline/new producer sites before production changes.
+- **Type-identity drift risk**: Wave A deliberately retains distinct interim class identities so legacy producers remain valid. B1 makes `CommitReceipt` an alias to `PlacementCommitReceipt` atomically with every producer/adapter migration, and the architectural gate rejects either half of that switch in isolation.
 - **Caller-state loss risk**: preflight captures full relevant-worktree staged, unstaged, and untracked state, including unrelated sentinels. Any mismatch blocks `compensated`.
 - **Foreign-ref risk**: expected-old CAS preserves foreign history. CAS refusal is `compensation_failed`, never a forced reset.
 - **Post-CAS resync risk**: record restored ref plus failed checkout path and supported repair; do not conceal the split outcome.
