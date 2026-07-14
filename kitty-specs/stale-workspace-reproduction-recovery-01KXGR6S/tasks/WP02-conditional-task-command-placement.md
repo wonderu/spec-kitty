@@ -31,7 +31,6 @@ subtasks:
 - T008
 - T009
 - T010
-agent: codex
 history: []
 agent_profile: python-pedro
 authoritative_surface: src/specify_cli/cli/commands/agent/
@@ -52,6 +51,7 @@ owned_files:
 - tests/specify_cli/coordination/test_commit_router_partition.py
 role: implementer
 tags: []
+shell_pid_created_at: "1784023781.31"
 ---
 
 # WP02 — Conditional Task-Command and Placement Remediation
@@ -102,6 +102,29 @@ production candidates divide into:
 - canonical placement: `coordination/commit_router.py`;
 - existing focused tests for those exact seams.
 
+### Justified out-of-map acceptance edit
+
+Doctrine permits one small, justified out-of-map edit when the no-overlap guard is
+preserved. WP02 may edit exactly
+`tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py`
+for these immutable pytest IDs only:
+
+- `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py::test_stale_workspace_transition_matrix[move-task-recoverable]` (matrix row 6)
+- `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py::test_stale_workspace_transition_matrix[move-task-unavailable]` (matrix row 7)
+- `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py::test_stale_workspace_transition_matrix[move-task-divergent]` (matrix row 8)
+
+Record this one-line rationale in the test-only commit and review handoff:
+`Out-of-map: dependency-owned WP01 acceptance witness must express WP02's authorized rows 6–8.`
+WP01 retains creation ownership and the immutable reviewed evidence at ref
+`ff7eca5e2c248730909d91cddde93c6c01232701`, whose approved witness blob is
+`d1f89937dc25353d74615d7305c97e9af00848ee`.
+
+Do not reorder or rename `_MATRIX`, its IDs, or its row-number binding. Freeze
+fixture construction, `_snapshot`, `_observe`, `_assert_common_record`, the
+registered invocation path, all common six-surface measurements, and every
+non-owned node expectation against that approved blob. Only the state-specific
+desired-outcome branches for the three named IDs may change.
+
 Do not edit workspace context, lifecycle synchronization, review workflow,
 Mission planning artifacts, status runtime modules, or unrelated tests. WP03 owns
 lifecycle reconciliation. WP04 owns review action ordering and aggregate proof.
@@ -122,8 +145,9 @@ Then apply:
 
 1. No RED/continue row in an owned path: do not edit production or tests; run the
    focused regression set and report byte-identical owned production paths.
-2. RED/continue in an owned path: preserve the failing witness as the red-first
-   evidence commit, then make the smallest owner-local fix.
+2. RED/continue in an owned path: author only the three named desired-contract
+   branches in the justified out-of-map witness, commit that test-only RED
+   evidence, then make the smallest owner-local production fix.
 3. RED/continue reaches an undeclared path: stop for plan amendment and task
    refinalization. Do not expand ownership ad hoc.
 4. Contradictory, missing, or unreviewed matrix evidence: reject the package.
@@ -172,14 +196,19 @@ not fall back to the primary checkout.
 
 ## Red-First Discipline
 
-When activated, keep a distinct test-remediation commit that fails on the
-reviewed baseline for the same production reason. Do not weaken assertions after
-the red commit. The implementation commit follows and contains only the minimum
-owned production/test paths.
+ATDD order is mandatory:
 
-If WP01 already provides the exact failing acceptance node, reuse it as the
-external witness and add focused owner tests only for branches the acceptance
-module cannot isolate. Do not duplicate the full real-Git fixture across files.
+1. Starting from the WP01 dependency base, change only the three named
+   state-specific desired-outcome branches and commit that test-only contract.
+2. Run the three exact pytest IDs and prove they are RED for the reviewed
+   production behavior before any production edit.
+3. Implement the smallest production repair and make the unchanged test-only
+   contract GREEN.
+
+Never change acceptance expectations after production implementation begins.
+Earlier WP01 commits, review artifacts, and the approved blob remain immutable.
+The six-surface observation and coverage stay intact; only expected deltas change
+to the atomic success/refusal contract.
 
 ## Subtasks
 
@@ -190,9 +219,9 @@ committed, complete, reviewed, and based on the recorded baseline.
 
 ### T007 — Preserve or add focused RED evidence
 
-For activated rows, run the exact WP01 node and the smallest focused seam test.
-Commit failing test evidence separately before production changes. For no-op,
-record the exact green commands and production-file hashes.
+Author the desired contract for the three exact pytest IDs, commit it test-only,
+and prove all three nodes RED on the dependency base before production changes.
+For no-op, record the exact green commands and production-file hashes.
 
 ### T008 — Implement the smallest owner-local correction
 
@@ -201,8 +230,9 @@ command actually requires it, and use the canonical placement seam for commits.
 
 ### T009 — Prove six-surface atomicity and placement
 
-Run the WP01 entry-point rows plus focused placement and authority tests. Compare
-ref OIDs, committed path sets, bytes, locks/paths, state events, and porcelain.
+Run the three exact IDs plus focused placement and authority tests without editing
+their post-RED expectations. Compare ref OIDs, committed path sets, bytes,
+locks/paths, state events, and porcelain; all six common surfaces remain asserted.
 
 ### T010 — Regression and handoff
 
@@ -235,7 +265,10 @@ workspace is clean after commits. Do not use retry-to-green.
 - The committed, independently reviewed matrix is the sole activation authority.
 - The ordinary non-skipped `move-task` row is classified.
 - Every activated RED has a distinct red-first evidence commit.
-- Only its reached owned path changes.
+- WP01's approved commits/review artifacts and blob remain immutable; the only
+  out-of-map diff is the pre-production desired contract for the three named IDs.
+- Only the reached owned production path and the three named justified
+  out-of-map desired-contract branches may change.
 - GREEN rows retain byte-identical production files.
 - Failure rows have empty commit ranges and no durable side effects.
 - Successful rows preserve canonical PRIMARY/COORD placement.
@@ -248,5 +281,14 @@ Use a reviewer distinct from the implementer. Re-run the exact authorized WP01
 nodes and focused owner tests; inspect commit ordering and path ownership rather
 than trusting the handoff. Reject skip-gated `move-task` as acceptance evidence.
 Reject any edit for a GREEN/stop row, any production path absent from the manifest,
-or any command-local placement workaround. A valid no-op review proves the matrix
-is GREEN for this ownership map and the declared production files are unchanged.
+any witness edit outside the three exact IDs, any `_MATRIX` reorder/rename, any
+change to frozen fixture/observation surfaces, any expectation edit after
+production begins, any rewrite of WP01's reviewed evidence, or any command-local
+placement workaround. Verify the one-line out-of-map rationale in both the
+test-only commit and review handoff.
+
+## Activity Log
+
+- 2026-07-14T17:46:04Z – codex – shell_pid=138606 – Assigned agent via action command
+- 2026-07-14T17:50:32Z – codex – shell_pid=138606 – Blocked: authorized rows 6-8 require post-fix assertions in tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py, but that external WP01 witness is absent from WP02 owned_files. The unchanged test hard-codes exit 0, durable mutations, and missing path for all stale move-task states, so recoverable success-with-recreated-path and unavailable/divergent atomic refusal cannot pass without editing an undeclared path. Requires plan ownership amendment/refinalization.
+- 2026-07-14T17:52:09Z – user – Planning amendment required: sequential acceptance-witness ownership omitted from WP02/WP04

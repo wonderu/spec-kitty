@@ -28,6 +28,8 @@ subtasks:
 phase: Phase 1 - Reproduction and disposition
 assignee: ''
 shell_pid_created_at: "1784023781.31"
+agent: "codex"
+shell_pid: "138606"
 history:
 - timestamp: '2026-07-14T00:00:00Z'
   agent: system
@@ -483,3 +485,7 @@ historical issue report.
 - 2026-07-14T17:09:23Z – codex – shell_pid=138606 – Ready for review: deterministic real-CLI stale-workspace witness; RED evidence preserved in 1902ce530
 - 2026-07-14T17:10:34Z – codex – shell_pid=138606 – Started review via action command
 - 2026-07-14T17:17:25Z – user – Moved to planned
+- 2026-07-14T17:19:00Z – codex – shell_pid=138606 – Started implementation via action command
+- 2026-07-14T17:29:54Z – codex – shell_pid=138606 – Moved to for_review
+- 2026-07-14T17:30:42Z – codex – shell_pid=138606 – Started review via action command
+- 2026-07-14T17:38:21Z – user – shell_pid=138606 – Arbiter override: cycle-1 rejection resolved by ff7eca5e2. Cycle-2 independent review proved real registered CLI/Git fixture; unverified_baseline occurs only after scoped test ran; all 12 rows assert exact argv/result, six surfaces, and path sets; unavailable/divergent <2s; two exact runs stable at 5 GREEN/stop + 7 RED/continue on planning base 2d05c53d0.

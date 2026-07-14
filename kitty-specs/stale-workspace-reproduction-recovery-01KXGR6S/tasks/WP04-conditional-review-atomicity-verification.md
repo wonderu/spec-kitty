@@ -131,9 +131,32 @@ The governing state model is:
 - Completed WP04 changes merge back to `fix/stale-workspace-reproduction`. The
   existing pull request remains DRAFT; only the human operator may mark it ready
   or merge it.
-- Stay inside the four owned files. If a proven RED requires an out-of-map edit,
+- Stay inside the four owned files, except for the single justified acceptance
+  file named below. If a proven RED requires any other out-of-map edit,
   stop and return a structured ownership finding to the orchestrator rather than
   silently expanding this package.
+
+### Justified out-of-map acceptance edit
+
+WP04 may edit exactly
+`tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py`
+for these immutable pytest IDs only:
+
+- `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py::test_stale_workspace_transition_matrix[review-healthy]` (matrix row 9)
+- `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py::test_stale_workspace_transition_matrix[review-recoverable]` (matrix row 10)
+- `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py::test_stale_workspace_transition_matrix[review-unavailable]` (matrix row 11)
+- `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py::test_stale_workspace_transition_matrix[review-divergent]` (matrix row 12)
+
+Record this one-line rationale in the test-only commit and review handoff:
+`Out-of-map: dependency-owned acceptance witness must express WP04's authorized review rows 9–12.`
+The approved WP02 witness blob, recorded in WP02's review handoff, is WP04's
+immutable dependency baseline.
+
+Do not reorder or rename `_MATRIX`, its IDs, or row-number binding. Freeze fixture
+construction, `_snapshot`, `_observe`, `_assert_common_record`, the registered
+invocation path, all common six-surface measurements, and rows 1–8 against the
+approved WP02 blob. Only state-specific desired-outcome branches for the four
+named IDs may change.
 
 ### Subtask T016: Consume the disposition and preserve no-op GREEN arms
 
@@ -373,14 +396,16 @@ green result.
 
 **Steps**:
 
-1. Re-run WP01's acceptance witness unchanged. Compare its file content or commit
-   identity with the approved WP01 version before running it; WP04 does not own and
-   must not modify that test.
-2. Require every former RED/continue review row to be GREEN with its original
+1. Before production changes, author and commit the test-only desired contract for
+   the four named review IDs while preserving rows 1–8 and all frozen surfaces
+   byte-for-byte against the approved WP02 blob.
+2. Run the four exact pytest IDs on the dependency base and prove them RED for the
+   reviewed production behavior. Only then begin production implementation.
+3. Require every former RED/continue review row to be GREEN with its original
    six-surface assertions intact.
-3. Require every original GREEN/stop row and healthy positive-control twin to stay
+4. Require every original GREEN/stop row and healthy positive-control twin to stay
    GREEN with byte-compatible public outcomes.
-4. Run the complete owned test surfaces:
+5. Run the complete owned test surfaces:
 
    ```bash
    PWHEADLESS=1 uv run --extra test pytest \
@@ -388,11 +413,13 @@ green result.
      tests/agent/test_workflow_review_lane_gate.py -q
    ```
 
-5. Run the unchanged WP01 acceptance module using the exact command documented by
-   WP01. Do not substitute a narrower helper test.
-6. Run focused regression suites named by WP01 through WP03 for healthy workspace and lane
+6. Run the dependency-ordered acceptance module using the exact command documented
+   by WP01. Do not substitute a narrower helper test or change the test-only
+   desired contract after production implementation begins.
+7. Run focused regression suites named by WP01 through WP03 for healthy workspace and lane
    lifecycle behavior, including WP03's integration module when WP03 activated.
-7. Run lint and strict typing on every owned production/test file:
+8. Run lint and strict typing on every changed production/test file, including
+   the justified out-of-map acceptance witness:
 
    ```bash
    uv run ruff check \
@@ -405,7 +432,7 @@ green result.
      src/specify_cli/cli/commands/agent/workflow_executor.py
    ```
 
-8. Run the architectural checks relevant to shared-package boundaries, placement,
+9. Run the architectural checks relevant to shared-package boundaries, placement,
    dead symbols, and terminology. At minimum include:
 
    ```bash
@@ -415,21 +442,26 @@ green result.
    ```
 
    Add any non-vacuous placement/authority guard identified by WP01, WP03, or WP04.
-9. Run `git diff --check` and verify every relevant checkout has clean porcelain
+10. Run `git diff --check` and verify every relevant checkout has clean porcelain
    after the test run.
-10. Report activated versus skipped subtasks, exact commands, counts, and any
+11. Report activated versus skipped subtasks, exact commands, counts, the approved
+    WP02 blob, the one-line out-of-map rationale, and any
     remaining externally owned issue in the review handoff. Never retry-to-green.
 
 **Files**:
 
 - No new files are expected.
-- Test updates must remain within the two owned modules.
-- WP01's acceptance witness is read/run unchanged.
+- Test updates remain within the two owned test modules plus the single justified
+  out-of-map acceptance file.
+- The out-of-map acceptance diff is limited to the pre-production desired-outcome
+  branches for the four exact review IDs; frozen construction/observation surfaces
+  and earlier reviewed evidence remain immutable.
 
 **Validation**:
 
-- Unchanged WP01 acceptance witness is GREEN.
-- Existing healthy review tests and both owned modules are GREEN.
+- The dependency-ordered acceptance witness is GREEN, with rows 1–8 and common
+  six-surface coverage preserved from the approved WP02 blob.
+- Existing healthy review tests and all three owned test modules are GREEN.
 - Ruff, strict mypy, architectural checks, terminology guard, and diff check pass.
 - Relevant worktrees are clean and the DRAFT PR boundary remains intact.
 
@@ -447,7 +479,9 @@ green result.
       paths, and porcelain unchanged.
 - [ ] If placement work activated, canonical PRIMARY/COORD routing is proven by
       commit path sets and #2160 remains unclaimed/unclosed by this Mission.
-- [ ] WP01's acceptance witness is unchanged and GREEN.
+- [ ] Earlier approved evidence is immutable; the test-only desired contract was
+      RED before production and is GREEN after changes limited to the four exact
+      review IDs.
 - [ ] Owned tests, healthy regressions, Ruff, strict mypy, architectural checks,
       terminology guard, and `git diff --check` are GREEN.
 - [ ] Review handoff lists exact evidence and skipped conditional work.
@@ -468,7 +502,9 @@ green result.
   Mitigation: require exact RED evidence, record adjacency, and consume only the
   existing partition-aware seam.
 - **False green**: helper tests can bypass the registered CLI and real Git state.
-  Mitigation: the unchanged WP01 real-CLI witness remains the aggregate authority.
+  Mitigation: the dependency-ordered real-CLI witness remains the acceptance
+  authority, frozen common six-surface measurements prevent coverage shrinkage,
+  and earlier reviewed commits preserve the original RED evidence.
 - **Output corruption**: incidental logs can break one-document JSON output.
   Mitigation: assert structured output and keep diagnostics on the owning channel.
 
@@ -488,8 +524,9 @@ the aggregate diff against the following questions:
    status/WP evidence, not merely a non-zero exit?
 6. If placement changed, are PRIMARY and COORD path sets proven through the
    canonical router, with #2160 only referenced as adjacent?
-7. Is WP01's acceptance witness unchanged, and does it pass through the registered
-   CLI with real Git/worktree state?
+7. Is the approved WP02 blob recorded, are rows 1–8 and frozen surfaces unchanged,
+   and did the four exact review IDs go RED in a test-only commit before the same
+   contract passed through the registered CLI with real Git/worktree state?
 8. Are GREEN/no-op arms preserved without production churn?
 9. Are all new branches directly exercised without suppressions, complexity growth,
    timing-only assertions, or retry-to-green behavior?
