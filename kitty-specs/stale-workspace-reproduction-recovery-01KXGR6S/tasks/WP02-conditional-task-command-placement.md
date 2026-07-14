@@ -89,8 +89,9 @@ spec-kitty agent action implement WP02 --agent codex
 
 Use the returned workspace path and branch. Do not guess a `.worktrees` path,
 manually create a worktree, or edit from the repository-root planning checkout.
-Confirm WP01 is approved or done and the committed disposition matrix has no
-pending review metadata or pending rows before touching code.
+Confirm WP01 is canonically approved or done, inactive, and with a clean
+dependency lane, and that the committed disposition matrix has no pending review
+metadata or pending rows before touching code.
 
 ## Owned Surface
 
@@ -102,10 +103,18 @@ production candidates divide into:
 - canonical placement: `coordination/commit_router.py`;
 - existing focused tests for those exact seams.
 
-### Justified out-of-map acceptance edit
+### Charter Exception Handling decision
 
-Doctrine permits one small, justified out-of-map edit when the no-overlap guard is
-preserved. WP02 may edit exactly
+ATDD / Reviewer Renata, Architect Alphonso, and the runtime-governance reviewer
+have approved this exception as recorded in the disposition matrix. This is a
+case-by-case Charter Exception Handling decision, not authority from generic
+ownership-map leeway.
+
+WP01 is canonically approved or done, inactive, and with a clean dependency lane.
+Lane-b contains the exact approved blob
+`d1f89937dc25353d74615d7305c97e9af00848ee` at ref `ff7eca5e2`, and WP02/WP04
+are serial dependencies with no concurrent writer. The exception is one test-only
+file: WP02 may edit exactly
 `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py`
 for these immutable pytest IDs only:
 
@@ -114,7 +123,7 @@ for these immutable pytest IDs only:
 - `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py::test_stale_workspace_transition_matrix[move-task-divergent]` (matrix row 8)
 
 Record this one-line rationale in the test-only commit and review handoff:
-`Out-of-map: dependency-owned WP01 acceptance witness must express WP02's authorized rows 6–8.`
+`Charter exception: WP01 canonically approved or done, inactive, and with a clean dependency lane; witness rows 6–8 only; frozen harness, serial writer, no topology recomputation.`
 WP01 retains creation ownership and the immutable reviewed evidence at ref
 `ff7eca5e2c248730909d91cddde93c6c01232701`, whose approved witness blob is
 `d1f89937dc25353d74615d7305c97e9af00848ee`.
@@ -124,6 +133,22 @@ fixture construction, `_snapshot`, `_observe`, `_assert_common_record`, the
 registered invocation path, all common six-surface measurements, and every
 non-owned node expectation against that approved blob. Only the state-specific
 desired-outcome branches for the three named IDs may change.
+
+Shared `owned_files` is not an alternative: it would recompute active topology,
+conflict with live workspaces, and reproduce #2644. Duplicating the fixture is
+prohibited because a parallel witness is fakeable. A fresh replacement Mission
+would discard truthful reviewed state. Historical evidence and the frozen harness
+remain immutable; the existing PR stays DRAFT and operator-only readiness/merge
+remains the final review.
+
+This decision supersedes only ownership-map-leeway step 1 and its corresponding
+failure mode for this file and these three nodes. It grants no general ownership.
+Stop if any recorded approval is withdrawn or rejected. Stop unless WP01 is
+canonically approved or done, inactive,
+and with a clean dependency lane. Also stop if the lane-b ref/blob differs, a
+concurrent writer appears, dependency order is broken, or any frozen surface,
+other node/file, shared ownership, or topology change is needed. Return a
+structured exception finding to the orchestrator.
 
 Do not edit workspace context, lifecycle synchronization, review workflow,
 Mission planning artifacts, status runtime modules, or unrelated tests. WP03 owns

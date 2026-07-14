@@ -136,9 +136,17 @@ The governing state model is:
   stop and return a structured ownership finding to the orchestrator rather than
   silently expanding this package.
 
-### Justified out-of-map acceptance edit
+### Charter Exception Handling decision
 
-WP04 may edit exactly
+ATDD / Reviewer Renata, Architect Alphonso, and the runtime-governance reviewer
+have approved this exception as recorded in the disposition matrix. This is a
+case-by-case Charter Exception Handling decision, not authority from generic
+ownership-map leeway. WP04 must not consume it until WP02 is approved.
+
+WP01 is canonically approved or done, inactive, and with a clean dependency lane.
+Lane-b contains approved blob `d1f89937dc25353d74615d7305c97e9af00848ee`
+at ref `ff7eca5e2`; WP02 then WP04 execute serially with no concurrent writer. The
+exception covers one test-only file: WP04 may edit exactly
 `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py`
 for these immutable pytest IDs only:
 
@@ -148,7 +156,7 @@ for these immutable pytest IDs only:
 - `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py::test_stale_workspace_transition_matrix[review-divergent]` (matrix row 12)
 
 Record this one-line rationale in the test-only commit and review handoff:
-`Out-of-map: dependency-owned acceptance witness must express WP04's authorized review rows 9–12.`
+`Charter exception: dependency witness rows 9–12 only; frozen harness, serial writer, no topology recomputation.`
 The approved WP02 witness blob, recorded in WP02's review handoff, is WP04's
 immutable dependency baseline.
 
@@ -157,6 +165,21 @@ construction, `_snapshot`, `_observe`, `_assert_common_record`, the registered
 invocation path, all common six-surface measurements, and rows 1–8 against the
 approved WP02 blob. Only state-specific desired-outcome branches for the four
 named IDs may change.
+
+Shared `owned_files` would recompute active topology, conflict with live
+workspaces, and reproduce #2644. Duplicating the fixture is prohibited because a
+parallel witness is fakeable. A fresh replacement Mission would discard truthful
+reviewed state. Historical evidence and the frozen harness remain immutable; the
+PR stays DRAFT and operator-only readiness/merge remains the final review.
+
+This decision supersedes only ownership-map-leeway step 1 and its corresponding
+failure mode for this file and these four nodes. It grants no general ownership.
+Stop if any recorded approval is withdrawn or rejected. Stop unless WP01 is
+canonically approved or done, inactive,
+and with a clean dependency lane. Also stop if WP02 state/dependency evidence is
+invalid, the lane-b ref/blob or approved WP02 blob differs, a concurrent writer
+appears, or any frozen surface, other node/file, shared ownership, or topology
+change is needed. Return a structured exception finding to the orchestrator.
 
 ### Subtask T016: Consume the disposition and preserve no-op GREEN arms
 
@@ -401,8 +424,9 @@ green result.
    byte-for-byte against the approved WP02 blob.
 2. Run the four exact pytest IDs on the dependency base and prove them RED for the
    reviewed production behavior. Only then begin production implementation.
-3. Require every former RED/continue review row to be GREEN with its original
-   six-surface assertions intact.
+3. Require every former RED/continue review row to be GREEN with six-surface
+   observation and coverage intact; expected deltas may change only for the four
+   named nodes and only to the pre-production desired contract.
 4. Require every original GREEN/stop row and healthy positive-control twin to stay
    GREEN with byte-compatible public outcomes.
 5. Run the complete owned test surfaces:
