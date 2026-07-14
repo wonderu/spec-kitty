@@ -40,6 +40,7 @@ kitty-specs/stale-workspace-reproduction-01KXGNFM/
 ├── data-model.md
 ├── quickstart.md
 ├── issue-matrix.md
+├── disposition-matrix.md
 ├── contracts/stale-workspace-transition-contract.md
 └── tasks.md
 ```
@@ -82,42 +83,52 @@ No charter violations are planned.
 
 - **Purpose**: Emit an authoritative disposition matrix and separate already-green negative controls/recoverable arms from current REDs before binding each RED to its existing owner.
 - **Relevant requirements**: FR-003, FR-007, FR-009, C-005, C-007
-- **Affected surfaces**: `research.md`, the transition contract, witness results
-- **Sequencing/depends-on**: IC-01
-- **Risks**: Treating all commands uniformly would manufacture a cross-command resolver and broaden #2626. Every row records baseline SHA, exact argv, state classification, RED/GREEN, six-surface delta, existing owner, and `stop`/`continue`.
+- **Affected surfaces**: `disposition-matrix.md`, `issue-matrix.md`, the transition contract, witness results
+- **Sequencing/depends-on**: IC-01; the schema file is committed during planning,
+  then the orchestrator replaces its pending rows only after independent WP01
+  approval and commits that reviewed checkpoint with `spec-kitty spec-commit`
+- **Risks**: Treating all commands uniformly would manufacture a cross-command resolver and broaden #2626. Every row records baseline SHA, exact argv, state classification, RED/GREEN, six-surface delta, existing owner, and `stop`/`continue`. Spec Kitty 3.2.5 cannot finalize a planning-artifact WP that owns canonical Mission paths (#2643), so downstream prompts fail closed on the committed matrix metadata rather than accepting an informal handoff.
 
-### IC-03 — Review readiness before claim
+### IC-03 — Task-command and placement remediation
+
+- **Purpose**: If the witness proves `mark-status`, ordinary non-skipped `move-task`, or their commit placement RED, repair only the reached task-command/placement owner and preserve already-green rows as no-op arms.
+- **Relevant requirements**: FR-003, FR-005, FR-006, FR-007, FR-008, FR-009, NFR-002, NFR-003, C-001, C-004, C-005, C-006, C-008
+- **Affected surfaces**: `src/specify_cli/cli/commands/agent/tasks_mark_status.py`, `tasks_move_task.py`, `tasks_parsing_validation.py`, `src/specify_cli/coordination/commit_router.py`, and their existing focused tests—but only the exact owners named by a reviewed RED row
+- **Sequencing/depends-on**: IC-02; conditional on a task-command or placement RED
+- **Risks**: The skip escape hatch returns before workspace resolution and is a negative control, never the acceptance witness. Placement work must use the existing canonical router and does not claim or close #2160.
+
+### IC-04 — Review readiness before claim
 
 - **Purpose**: If review ordering is RED, consume one reconciled workspace classification and establish/materialize readiness before `for_review → in_review` mutation.
 - **Relevant requirements**: FR-004, FR-005, FR-006, FR-009, C-001, C-002, C-003, C-008
 - **Affected surfaces**: `src/specify_cli/cli/commands/agent/workflow.py`, `workflow_executor.py`, `workspace/context.py`, and only proven lifecycle consumers
-- **Sequencing/depends-on**: IC-02 and IC-04 when the lifecycle row is RED; otherwise IC-02. Conditional on a review RED.
+- **Sequencing/depends-on**: IC-02, IC-03, and IC-05 when activated. Conditional on a review RED.
 - **Risks**: Readiness has two phases: non-mutating classify/validate, then invocation-owned recovery and lock. Any later failure releases the lock and removes only a worktree proven created by this invocation. The live review bookkeeping path currently sends the mixed WP/status bundle through one coordination transaction; the witness must classify that placement rather than assuming it already splits.
 
-### IC-04 — Lifecycle missing-authority diagnostics
+### IC-05 — Lifecycle missing-authority diagnostics
 
 - **Purpose**: If branch-plus-worktree absence or divergence is RED, make the canonical workspace seam reconcile persisted context with current lane assignment and return ready/recoverable/unavailable/divergent before any cwd-bound probe.
 - **Relevant requirements**: FR-005, FR-006, FR-008, FR-009, NFR-004, C-008
 - **Affected surfaces**: `src/specify_cli/lanes/lifecycle_sync.py` and focused integration tests
-- **Sequencing/depends-on**: IC-02; conditional on a lifecycle/reconciliation RED; precedes IC-03 when both activate
+- **Sequencing/depends-on**: IC-02 and IC-03; conditional on a lifecycle/reconciliation RED; precedes IC-04 when both activate
 - **Risks**: Thread the same resolved identity into lifecycle sync instead of recomposition; no directory fabrication or arbitrary branch creation.
 
-### IC-05 — Cross-surface regression evidence
+### IC-06 — Cross-surface regression evidence
 
 - **Purpose**: Prove healthy behavior, structured output, clean checkouts, correct commit placement, and exact refusal deltas after conditional fixes.
 - **Relevant requirements**: FR-002, FR-004, FR-005, FR-008, NFR-002, NFR-003
 - **Affected surfaces**: focused CLI/integration suites, Ruff, mypy, architectural gates
-- **Sequencing/depends-on**: IC-02 and any implemented IC-03/IC-04
+- **Sequencing/depends-on**: IC-02 and any implemented IC-03/IC-04/IC-05
 - **Risks**: Passing focused tests without marker/authority guards can miss CI routing or split-placement regressions.
 
 ## Execution Strategy
 
 1. Land IC-01 as a test-only commit. Parameterize healthy, matching-branch recoverable, branch-absent, and persisted-context-divergent states for each entry point using exact registered CLI argv and healthy positive-control twins.
-2. Produce the disposition matrix with baseline SHA, exact command, classification, RED/GREEN, six-surface delta, reached owner, and `stop`/`continue` for every row.
-3. If every row is green, stop production implementation. Mixed verdicts activate production work only for rows marked RED/continue.
-4. If a placement row is RED, record it explicitly as a #2160-adjacent residual in `issue-matrix.md` and the DRAFT PR before editing production code. The conditional fix must route through the existing canonical partition-aware commit seam rather than hand-rolling dual commits; it does not close or claim #2160.
-5. If lifecycle/reconciliation is RED, implement IC-04 first. If review ordering is RED, implement IC-03 after IC-04 when activated, otherwise directly after IC-02.
-6. Run IC-05 after every activated remediation concern, then independent WP review and Mission closeout while PR #2641 stays DRAFT.
+2. Independently review the witness, then replace the pending rows in the pre-created `disposition-matrix.md` with the reviewed baseline SHA, exact command, classification, RED/GREEN verdict, six-surface delta, reached owner, reviewer/ref, and `stop`/`continue` for every row. Commit the checkpoint with `spec-kitty spec-commit`; downstream work is blocked until that commit is complete and independently traceable.
+3. If every row is green, every conditional production package completes as an evidence-backed no-op. Mixed verdicts activate edits only for rows marked RED/continue.
+4. If a task-command or placement row is RED, implement IC-03 first. Record any #2160-adjacent placement residual in `issue-matrix.md` and the DRAFT PR before editing production code. The fix must route through the existing canonical partition-aware commit seam rather than hand-rolling dual commits; it does not close or claim #2160.
+5. If lifecycle/reconciliation is RED, implement IC-05 after IC-03. If review ordering is RED, implement IC-04 after IC-05. The sequential WP graph remains intact even when an earlier conditional package is a reviewed no-op.
+6. Run IC-06 after every activated remediation concern, then independent WP review and Mission closeout while PR #2641 stays DRAFT.
 
 ## Acceptance Witness Matrix
 
@@ -126,10 +137,12 @@ No charter violations are planned.
 | Entry point | Exact argv | Required starting state |
 |---|---|---|
 | `mark-status` | `agent tasks mark-status T001 --status done --mission <slug> --json` | `tasks.md` contains pending T001; stale lane context exists but must remain irrelevant |
-| `move-task` | `agent tasks move-task WP01 --to for_review --mission <slug> --agent codex --skip-pre-review-gate --json` | WP01 is `in_progress`, subtasks complete, implementation commit present, dependencies satisfied |
+| `move-task` | `agent tasks move-task WP01 --to for_review --mission <slug> --agent codex --json` | WP01 is `in_progress`, subtasks complete, implementation commit present, dependencies satisfied |
 | `agent action review` | `agent action review WP01 --agent codex --mission <slug>` | WP01 is `for_review`, implementation commit present, coordination topology/status materialized |
 
 Each argv runs against healthy, matching-branch/missing-worktree, branch-absent, and divergent-context rows as applicable. Before/after ref OIDs are recorded for PRIMARY, COORD, and lane refs; every commit in each OID range and its path set is enumerated. Refusal requires an empty OID range, not merely byte-equivalent files. The acceptance module may not monkeypatch any production symbol, subprocess, root/placement resolution, lifecycle, commit, or status path.
+
+The `move-task --skip-pre-review-gate` escape hatch may be retained only as a separately labelled negative-control row. It cannot satisfy the ordinary `move-task` acceptance row because it returns before workspace resolution.
 
 ## Readiness and Compensation Protocol
 
