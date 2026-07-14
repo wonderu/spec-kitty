@@ -39,6 +39,7 @@ An operator invokes `mark-status`, `move-task`, or the review action while lane 
 1. **Given** a recoverable missing lane worktree, **When** the command chooses recovery, **Then** all authoritative state and tracking writes are committed at their canonical placement and every relevant checkout is clean.
 2. **Given** a missing lane worktree that cannot be recovered safely, **When** the command runs, **Then** it exits non-zero before mutation and identifies the stale record, missing path, and supported recovery command.
 3. **Given** either outcome, **When** human and JSON output are inspected, **Then** neither reports an overall success while an auto-commit failed.
+4. **Given** an unrecoverable stale workspace during review, **When** readiness fails, **Then** event-log bytes, materialized status, WP/tracking bytes, Git HEADs, locks, and porcelain remain unchanged from before the command.
 
 ---
 
@@ -57,10 +58,9 @@ Operators whose lane and coordination worktrees exist continue to receive the cu
 
 ### Edge Cases
 
-- The lane branch exists but its worktree is absent and recoverable.
-- Both the lane branch and worktree are absent while the stale record remains.
+- The recorded lane branch exists, agrees with the current lane assignment, and its worktree is absent: recovery may reattach/recreate it.
+- The recorded lane branch is absent or disagrees with the current lane assignment while the stale record remains: refuse before mutation.
 - The coordination worktree exists but the lane worktree does not.
-- The recorded path is relative, absolute, malformed, or points outside the repository authority boundary.
 - A transition has dependencies or review guards that would independently refuse it; stale-workspace handling must not bypass those guards.
 - Recovery or refusal is interrupted; no subprocess, lock, partial event, or dirty tracking mutation remains.
 
@@ -76,15 +76,16 @@ Operators whose lane and coordination worktrees exist continue to receive the cu
 | FR-004 | Atomic success | A successful stale-workspace transition MUST leave all intended authoritative and tracking writes committed at canonical placement with relevant checkouts clean. | High | Open |
 | FR-005 | Fail before mutation | When safe recovery is unavailable, the command MUST fail before durable mutation and MUST NOT report the transition as successful. | High | Open |
 | FR-006 | Actionable diagnostics | Refusal MUST identify the stale workspace record or lane, the missing path, and a supported recovery action without exposing a raw `FileNotFoundError` or misleading path. | High | Open |
-| FR-007 | Entry-point coverage | The disposition MUST cover `mark-status`, `move-task`, and the review action at their shared canonical authority seam, with entry-point-specific regression coverage where behavior differs. | High | Open |
+| FR-007 | Entry-point coverage | The disposition MUST cover `mark-status`, `move-task`, and the review action through each entry point's existing owning seam. Consolidation is permitted only if the RED witness proves one shared cause; the Mission MUST NOT manufacture a new cross-command resolver. | High | Open |
 | FR-008 | Structured-output truth | JSON mode MUST remain one parseable stdout document whose status agrees with the durable outcome; human mode MUST make commit failure or refusal unmistakable. | Medium | Open |
+| FR-009 | Recovery classification | Recovery MAY recreate or reattach a missing worktree only when the canonical lane branch exists and agrees with the current lane assignment; an absent or divergent branch MUST fail before mutation. | High | Open |
 
 ### Non-Functional Requirements
 
 | ID | Title | Requirement | Category | Priority | Status |
 |----|-------|-------------|----------|----------|--------|
 | NFR-001 | Determinism | The focused stale-workspace witness MUST pass reliably across repeated local runs and avoid timing-only assertions. | Reliability | High | Open |
-| NFR-002 | Cross-platform semantics | Path validation and diagnostics MUST remain correct on Linux, macOS, and Windows-shaped paths; platform-specific recovery behavior MUST have focused coverage. | Portability | High | Open |
+| NFR-002 | Platform neutrality | The fix MUST use existing platform-neutral workspace and Git abstractions and introduce no platform-specific path assumptions; new platform variants are conditional follow-ups unless the production-shaped RED witness reaches such behavior. | Portability | Medium | Open |
 | NFR-003 | Quality gates | Changed code MUST pass focused pytest coverage, Ruff, and strict mypy with zero new warnings or blanket suppressions. | Maintainability | High | Open |
 | NFR-004 | Diagnostic latency | A non-recoverable missing-workspace state MUST be detected before launching transition side effects and complete within 2 seconds in a local fixture. | Performance | Medium | Open |
 
@@ -96,15 +97,18 @@ Operators whose lane and coordination worktrees exist continue to receive the cu
 | C-002 | Status event authority | `status.events.jsonl` remains the sole authority for lane state; WP frontmatter/activity text is tracking evidence, not an alternative transition authority. | Architecture | High | Open |
 | C-003 | Placement authority | Tracking and status artifacts MUST be committed through their canonical placement/commit-router seams; never fall back to an arbitrary checkout merely because it exists. | Architecture | High | Open |
 | C-004 | No silent workaround | Do not delete stale metadata, hand-commit primary-checkout files, or auto-create directories outside the supported workspace lifecycle as an implementation shortcut. | Safety | High | Open |
-| C-005 | Issue boundary | #2160 and #2367 are adjacent authority/race mechanisms; this Mission changes them only if the #2626 reproduction proves the same owning seam and the plan records the fold explicitly. | Scope | Medium | Open |
+| C-005 | Issue boundary | #2160 and #2367 are adjacent, already-owned authority/race mechanisms; this Mission treats them as references and changes their mechanisms only if the #2626 reproduction proves the same owning seam, the plan records the fold explicitly, and ownership is coordinated. | Scope | High | Open |
 | C-006 | Draft PR workflow | All changes reach `origin/main` only through a DRAFT PR; the human operator alone may mark ready or merge. | Governance | High | Open |
+| C-007 | Production-shaped fixture | The required witness uses the reported relative `.worktrees/...` record with an absent directory. Malformed, outside-repository, and speculative platform-shaped records are non-goals unless discovered on the exact live path. | Scope | High | Open |
+| C-008 | Resolve once before mutation | Each affected command MUST obtain one canonical resolved-workspace result before durable mutation and pass that result through readiness, recovery, and execution. Lifecycle helpers and call sites MUST NOT independently recompose a competing path or branch. | Architecture | High | Open |
 
 ### Key Entities
 
 - **Workspace record**: Persisted `.kittify/workspaces/<mission>-<lane>.json` context describing a lane assignment and expected worktree.
 - **Resolved workspace**: Canonical runtime result for a WP, including execution mode, lane, branch, path, and existence state.
-- **Coordination placement**: Owning location/ref for Mission planning and tracking artifacts in coordinated topology.
-- **Transition transaction**: The coupled decision, event append, materialization, tracking write, commit, and structured result that must present one truthful outcome.
+- **Primary placement**: Owning location/ref for `tasks.md` and WP tracking files; it is not interchangeable with status placement.
+- **Coordination status placement**: Owning location/ref for status events and materialized status in coordinated topology; it does not absorb PRIMARY tracking files.
+- **Transition consistency contract**: The cross-placement decision, event append, materialization, tracking write, commits, compensation/refusal, and structured result that must present one truthful outcome even though artifacts have distinct owners.
 - **Recovery action**: Existing supported workspace lifecycle operation that can recreate or reconcile a missing lane worktree without fabricating authority.
 
 ## Success Criteria *(mandatory)*
@@ -123,3 +127,10 @@ Operators whose lane and coordination worktrees exist continue to receive the cu
 - The preferred outcome is not predetermined: safe recovery and fail-closed refusal are both acceptable when grounded in the canonical authority and an honest durable result.
 - The report's original Spec Kitty 3.2.5 environment is context, not proof that the defect survives current `origin/main`.
 - This request is not a bulk edit; any cross-file changes are semantic wiring/tests around one stale-workspace behavior, not a repeated identifier migration.
+
+## Non-Goals
+
+- A residual authority sweep for #2160 or merge-time VCS-lock/rollback work from #2367.
+- Upgrade-worktree coherence from #2392, workspace-registry redesign, or a new doctor/recovery command.
+- Relaxing `safe_commit` path policy, falling back to arbitrary primary-checkout commits, or redesigning generic commit-failure warnings without an exact stale-workspace RED.
+- Release, version, or broad documentation work unrelated to behavior contradicted by the witness.
