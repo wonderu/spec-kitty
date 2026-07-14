@@ -7,6 +7,7 @@
   "mission_number": null,
   "mission_slug": "stale-workspace-reproduction-recovery-01KXGR6S",
   "mission_type": "software-dev",
+  "pr_bound": true,
   "purpose_context": "A fresh pre-implementation Mission replaces a corrupted refinalization state while preserving the reviewed reproduction-first scope and draft PR boundary.",
   "purpose_tldr": "Reproduce and conditionally repair stale lane-workspace transition failures for #2626.",
   "slug": "stale-workspace-reproduction-recovery-01KXGR6S",
