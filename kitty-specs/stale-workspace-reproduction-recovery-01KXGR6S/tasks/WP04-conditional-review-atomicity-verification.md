@@ -47,6 +47,8 @@ owned_files:
 role: implementer
 tags: []
 shell_pid_created_at: "1784023781.31"
+shell_pid: "138606"
+agent: "codex"
 ---
 
 # WP04 — Conditional Review Atomicity and Verification
@@ -570,3 +572,5 @@ canonical placement all tell the same story.
 - 2026-07-14T19:42:29Z – codex – shell_pid=138606 – Ready for independent re-review: both placement refs proven from pre-emission hashes; partial outcomes refused; invocation cleanup ownership and failure precedence covered.
 - 2026-07-14T19:43:14Z – codex – shell_pid=138606 – Started review via action command
 - 2026-07-14T19:45:17Z – user – Moved to planned
+- 2026-07-14T19:47:01Z – codex – shell_pid=138606 – Assigned agent via action command
+- 2026-07-14T20:00:55Z – user – shell_pid=138606 – Blocked at reviewed ownership boundary: zero-delta split-placement requires upstream composite PRIMARY+COORD transaction receipt and conditional compensation; operator scope decision required.
