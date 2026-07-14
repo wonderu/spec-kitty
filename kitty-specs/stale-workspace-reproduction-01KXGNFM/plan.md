@@ -92,7 +92,7 @@ No charter violations are planned.
 ### IC-03 — Task-command and placement remediation
 
 - **Purpose**: If the witness proves `mark-status`, ordinary non-skipped `move-task`, or their commit placement RED, repair only the reached task-command/placement owner and preserve already-green rows as no-op arms.
-- **Relevant requirements**: FR-003, FR-005, FR-006, FR-007, FR-008, FR-009, NFR-002, NFR-003, C-001, C-004, C-005, C-006, C-008
+- **Relevant requirements**: FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, NFR-002, NFR-003, NFR-004, C-001, C-002, C-003, C-004, C-005, C-006, C-008
 - **Affected surfaces**: `src/specify_cli/cli/commands/agent/tasks_mark_status.py`, `tasks_move_task.py`, `tasks_parsing_validation.py`, `src/specify_cli/coordination/commit_router.py`, and their existing focused tests—but only the exact owners named by a reviewed RED row
 - **Sequencing/depends-on**: IC-02; conditional on a task-command or placement RED
 - **Risks**: The skip escape hatch returns before workspace resolution and is a negative control, never the acceptance witness. Placement work must use the existing canonical router and does not claim or close #2160.
