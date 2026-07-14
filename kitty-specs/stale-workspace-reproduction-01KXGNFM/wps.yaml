@@ -1,0 +1,100 @@
+work_packages:
+  - id: WP01
+    title: "Real CLI stale-workspace witness"
+    dependencies: []
+    owned_files:
+      - "tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py"
+      - "kitty-specs/stale-workspace-reproduction-01KXGNFM/disposition-matrix.md"
+    requirement_refs:
+      - FR-001
+      - FR-002
+      - FR-003
+      - FR-007
+      - FR-008
+      - FR-009
+      - NFR-001
+      - NFR-004
+      - C-004
+      - C-005
+      - C-006
+      - C-007
+    plan_concern_refs:
+      - IC-01
+      - IC-02
+    subtasks:
+      - T001
+      - T002
+      - T003
+      - T004
+      - T005
+
+  - id: WP02
+    title: "Conditional lifecycle reconciliation"
+    dependencies:
+      - WP01
+    owned_files:
+      - "src/specify_cli/lanes/lifecycle_sync.py"
+      - "tests/integration/test_lane_lifecycle_sync.py"
+    requirement_refs:
+      - FR-003
+      - FR-005
+      - FR-006
+      - FR-008
+      - FR-009
+      - NFR-002
+      - NFR-003
+      - NFR-004
+      - C-001
+      - C-004
+      - C-005
+      - C-006
+      - C-008
+    plan_concern_refs:
+      - IC-02
+      - IC-04
+    subtasks:
+      - T006
+      - T007
+      - T008
+      - T009
+      - T010
+
+  - id: WP03
+    title: "Conditional review atomicity and verification"
+    dependencies:
+      - WP01
+      - WP02
+    owned_files:
+      - "src/specify_cli/cli/commands/agent/workflow.py"
+      - "src/specify_cli/cli/commands/agent/workflow_executor.py"
+      - "tests/specify_cli/cli/commands/test_workspace_husk_resolution_1833.py"
+      - "tests/agent/test_workflow_review_lane_gate.py"
+    requirement_refs:
+      - FR-003
+      - FR-004
+      - FR-005
+      - FR-006
+      - FR-007
+      - FR-008
+      - FR-009
+      - NFR-002
+      - NFR-003
+      - NFR-004
+      - C-001
+      - C-002
+      - C-003
+      - C-004
+      - C-005
+      - C-006
+      - C-008
+    plan_concern_refs:
+      - IC-02
+      - IC-03
+      - IC-05
+    subtasks:
+      - T011
+      - T012
+      - T013
+      - T014
+      - T015
+      - T016
