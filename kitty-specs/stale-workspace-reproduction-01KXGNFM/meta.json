@@ -7,6 +7,7 @@
   "mission_number": null,
   "mission_slug": "stale-workspace-reproduction-01KXGNFM",
   "mission_type": "software-dev",
+  "pr_bound": true,
   "purpose_context": "Operators need lane transitions to remain truthful after coordination-branch recreation: either recover through the canonical workspace authority or fail clearly before mutation, with no misleading success and no dirty primary checkout.",
   "purpose_tldr": "Prevent stale lane-workspace metadata from crashing transitions or silently leaving tracking writes uncommitted.",
   "slug": "stale-workspace-reproduction-01KXGNFM",
