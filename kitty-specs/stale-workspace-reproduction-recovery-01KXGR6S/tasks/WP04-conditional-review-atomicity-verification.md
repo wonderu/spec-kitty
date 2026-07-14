@@ -3,7 +3,6 @@ work_package_id: WP04
 title: Conditional review atomicity and verification
 dependencies:
 - WP03
-
 requirement_refs:
 - FR-003
 - FR-004
