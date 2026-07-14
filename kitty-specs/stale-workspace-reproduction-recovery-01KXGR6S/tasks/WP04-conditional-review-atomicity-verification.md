@@ -572,43 +572,53 @@ transaction or treating rejected discovery work as authority.
 
 **Steps**:
 
-1. Record commits `7e8f6f579` and `52d5f02ab` as **rejected, non-authorizing
-   discovery evidence**. Their code, expectations, producer set, and green results do
-   not satisfy any gate and MUST NOT be copied forward as reviewed behavior.
-2. One optional test-only correction commit MAY replace or delete test scaffolding
-   introduced by those commits. It MUST NOT edit production, frozen witness rows,
-   relax assertions/fixtures, or claim RED. Record its SHA, `git diff --name-status`,
-   deleted/replaced nodes, and assertion/fixture audit separately from ATDD evidence.
-3. Land the Wave A test-only API/type/port RED commit. It pins the sole
-   `PlacementCommitReceipt`, exact `CommitReceipt = PlacementCommitReceipt` identity,
-   data-only `PlacementCommitFailure`, four-value result vocabulary, Mission Management
-   entry signature, owner ports, producer allowlist, Git import boundary, and
-   `CompositeImplementationUnavailable`. Production is unchanged in this commit.
-4. The Wave A RED MUST include the non-vacuous/shrink-only/self-mutation producer gate,
-   alias identity, Git-no-coordination-import check, and AST checks for the exact
-   scaffold. Self-mutation injects an unauthorized production producer, proves
-   rejection, and restores the file byte-for-byte in `finally`.
-5. Land a separate mutation-free scaffold behavior commit whose production diff is
+1. Record commits `7e8f6f579`, `52d5f02ab`, and scaffold `98ccc4dc` as
+   **rejected, non-authorizing discovery evidence**. `98ccc4dc` is rejected specifically
+   because switching the exact alias before migrating the live
+   `BookkeepingTransaction.commit` constructor breaks that canonical producer. None of
+   their code, expectations, producer sets, or green results satisfy a gate.
+2. The next commit MUST be a test-only correction/remediation RED before any production
+   change. Remove the Wave A exact-alias-now expectation and replace/delete rejected
+   scaffolding without weakening frozen witness or unrelated assertions. Pin:
+   - full future data-only `PlacementCommitReceipt` and `PlacementCommitFailure`;
+   - the existing legacy `CommitReceipt` as a distinct class with exact existing
+     fields, constructor signature, behavior, and identity during Wave A;
+   - real regression
+     `tests/specify_cli/coordination/test_transaction.py::test_append_event_then_commit_returns_receipt`;
+   - four-value result vocabulary, Mission Management signature/ports, Git import
+     boundary, and mutation-free `CompositeImplementationUnavailable`.
+   Record SHA, failing assertions, `git diff --name-status`, and assertion/fixture audit.
+3. Every producer/import/signature mutation probe MUST run only in a collision-safe
+   disposable copy. The scanner/gate accepts an explicit root/path; copy the declared
+   committed preimage plus minimal package tree/config into a unique temporary root,
+   mutate only that copy, prove rejection there, and delete the root in cleanup. Assert
+   canonical source hashes equal committed preimage before and after. Never mutate the
+   shared lane/repository, even under a lock/`finally`; crash, SIGKILL, overlap, and
+   parallel readers must be unable to observe probe bytes.
+4. Land a bounded Wave A remediation behavior commit whose production diff is
    allowlisted to exactly two files:
-   - `src/specify_cli/coordination/types.py`: data-only
-     `PlacementCommitReceipt`, exact alias, and data-only `PlacementCommitFailure`;
+   - `src/specify_cli/coordination/types.py`: retain full future data-only
+     `PlacementCommitReceipt` and `PlacementCommitFailure`, while restoring the legacy
+     `CommitReceipt` fields/constructor/behavior/identity byte-compatible and distinct;
    - `src/specify_cli/status/review_transaction.py`: enums, frozen dataclasses,
-     protocols, public entry signature, and `CompositeImplementationUnavailable`.
-6. The AST/diff allowlist MUST reject every other production path and any executable
+     protocols, public entry signature, and the unavailable scaffold unchanged.
+5. The AST/diff allowlist MUST reject every other production path and any executable
    scaffold behavior. The entry immediately raises
    `CompositeImplementationUnavailable` before resource creation/attachment, any
    resource/review/status/Git lock, owner/ref call, delta, receipt, pending outbound,
    channel, or retry. It returns no terminal result. Prohibit `__init__.py` exports,
    workflow wiring, Git/status/router/outbound calls, hidden fallback, compatibility
    execution, owner construction, ref inspection/movement, and terminal return.
-7. Run Wave A tests serially, record RED then GREEN SHAs/assertions, and prove the
-   scaffold's production diff and AST exactly match the allowlist. Do not begin B1
-   until Wave A is GREEN.
+6. Run all corrected Wave A tests, including the real transaction regression, and
+   record RED then GREEN SHAs/assertions. Prove the remediation diff/AST exactly match
+   the two-file allowlist, legacy/future identities remain distinct, and the canonical
+   hashes never changed during probes. Do not begin B1 until all corrected Wave A tests
+   are GREEN.
 
 **Validation**:
 
-- Correction evidence is explicitly non-RED and rejected commits remain non-authorizing.
-- Wave A has test-only RED before its separate two-file scaffold behavior commit.
+- `98ccc4dc` remains historical/non-authorizing and is remediated test-first.
+- Corrected Wave A has test-only RED before its bounded two-file remediation commit.
 - The unavailable entry is observably mutation-free and the AST/diff gate is exact.
 - Active IDs, frontmatter ownership, lane-d, topology, frozen witness, and history are
   unchanged.
@@ -633,15 +643,25 @@ typed post-commit failure seam. Each slice is exactly test-only RED then behavio
    - Git-owned pending `LocalCommit` plus every named outbound intent staged before
      mutation; committed is only releasable after local terminal, while refused and
      every non-success discard/suppress with zero persistence/send/delivery attempts;
-   - byte-compatible default non-composite safe-commit and `LocalCommit` behavior.
+   - byte-compatible default non-composite safe-commit and `LocalCommit` behavior;
+   - the final FR-011 `CommitReceipt is PlacementCommitReceipt` switch together with
+     migration of **every** existing canonical producer/adapter to the expanded
+     constructor, the real legacy transaction regression, the final non-vacuous
+     shrink-only producer gate, and both complete PRIMARY/COORD success adapters. The
+     RED must prove the alias switch cannot pass independently of full migration.
    On Wave A, this RED MAY stop at explicit unavailable, but instrumentation must prove
    zero locks, owners, refs, lower-seam commits, outbound evidence, or retry before it.
-2. **B1 behavior commit**: implement only prepare, pre-mutation deferral/staging and
-   disposition, fixed lock/lifecycle seam, real owners, both complete canonical
-   PRIMARY and COORD success Git-evidence→receipt adapters, receipt/identity evaluator,
-   and typed `committed`/`refused`/indeterminate `compensation_failed`. B1 wholly and
-   solely owns both success adapters. It performs no retry, compensation, persistence/
-   send, or delivery. Rerun Wave A and B1 GREEN before B2.
+2. **B1 behavior commit**: atomically migrate every existing canonical producer/
+   adapter to the full `PlacementCommitReceipt` constructor, add both complete PRIMARY
+   and COORD success adapters, finalize the non-vacuous shrink-only producer allowlist,
+   and switch to exact `CommitReceipt = PlacementCommitReceipt` in this same commit.
+   No intermediate revision may switch the alias while a legacy constructor call
+   remains. Also implement only prepare, pre-mutation deferral/staging/disposition,
+   fixed lock/lifecycle seam, real owners, receipt/identity evaluator, and typed
+   `committed`/`refused`/indeterminate `compensation_failed`. B1 wholly and solely owns
+   the alias switch, complete migration, final producer set, and both success adapters.
+   It performs no retry, compensation, persistence/send, or delivery. Rerun corrected
+   Wave A, the real transaction regression, and B1 GREEN before B2.
 3. **B2 test-only RED commit**: drive the real Git commit seam through post-commit
    caller-state recovery failure. Require the placement owner to raise
    `PlacementCommitFailure` carrying the complete receipt and recovery diagnostic;
@@ -664,7 +684,8 @@ typed post-commit failure seam. Each slice is exactly test-only RED then behavio
 
 - Each B1/B2 test commit precedes exactly one behavior commit and all prior slices stay
   GREEN.
-- B1 alone can produce truthful first terminals and owns both success adapters plus
+- B1 alone can produce truthful first terminals and atomically owns the final FR-011
+  alias, all producer migrations, final producer gate, both success adapters, and
   `LocalCommit` deferral/staging.
 - B2 alone owns typed post-commit failure and its complete error receipt.
 
@@ -728,7 +749,7 @@ Mission Management retry and post-commit delivery. Each slice is exactly RED→b
 - Every test-only RED commit precedes its one behavior commit and all prior slices are
   rerun GREEN.
 - Continuous-lock compensation, fresh retry state, terminal no-retry, and committed-
-  only delivery match plan `63c3a982` exactly.
+  only delivery match plan `b9dce9b` exactly.
 
 ### Subtask T025: Run aggregate two-layer proof and architectural gates
 
@@ -737,16 +758,18 @@ weakening historical evidence.
 
 **Steps**:
 
-1. Audit the exact commit chain: optional rejected-scaffold correction (never RED),
-   Wave A test RED → two-file scaffold, then B1 RED → behavior, B2 RED → behavior,
+1. Audit the exact commit chain: rejected historical scaffold `98ccc4dc`, mandatory
+   Wave A correction RED → bounded two-file remediation, then B1 RED → atomic alias/
+   producer-migration behavior, B2 RED → behavior,
    B3 RED → behavior, B4 RED → behavior, and B5 RED → behavior. For every pair record
    SHAs, failing/passing assertions, `git diff --name-status`, production/test paths,
    and proof all earlier slices were GREEN before the next RED.
-2. Re-run the Wave A AST/diff allowlist against its scaffold commit and current tree.
-   Prove the original scaffold touched only the two authorized files and contained no
-   prohibited call/wiring/export/terminal behavior. Preserve `7e8f6f579` and
-   `52d5f02ab` as rejected/non-authorizing evidence and keep any correction audit
-   separate from RED evidence.
+2. Re-run the corrected Wave A AST/diff allowlist against its remediation commit and
+   current tree. Prove only the two authorized files changed, the legacy transaction
+   constructor/identity remained valid and distinct, and no prohibited execution was
+   introduced. Preserve `7e8f6f579`, `52d5f02ab`, and `98ccc4dc` as rejected/non-
+   authorizing evidence. Re-run every mutation probe against a disposable explicit-root
+   copy and prove canonical source hashes remain the committed preimage.
 3. Registered-CLI real-Git layer: run the unchanged 12-row witness plus focused
    workspace/workflow tests. Prove operator output, durable refs/bytes/index/worktrees,
    clean refusal, and zero outbound attempts on non-success.
@@ -866,16 +889,17 @@ weakening historical evidence.
 
 ## Amendment Definition of Done
 
-- [ ] Rejected `7e8f6f579`/`52d5f02ab` remain non-authorizing; any correction commit
-      is test-only, audited, and never represented as RED.
+- [ ] Rejected `7e8f6f579`/`52d5f02ab`/`98ccc4dc` remain non-authorizing; the scaffold
+      break is remediated by a mandatory test-only RED before production.
 - [ ] Wave A and each B1–B5 test-only RED precede exactly one authorized behavior
       commit, with all prior slices GREEN.
-- [ ] Wave A scaffold is mutation-free and its AST/diff touches exactly the two
-      allowlisted production files/surfaces.
+- [ ] Corrected Wave A preserves distinct legacy `CommitReceipt` compatibility plus
+      future types, stays mutation-free, and touches exactly two allowlisted files.
 - [ ] `PlacementCommitReceipt` is the sole class and `CommitReceipt` is its exact alias.
 - [ ] Git remains independent of coordination receipt types.
-- [ ] B1 wholly owns both success adapters plus pending `LocalCommit` and named-channel
-      pre-mutation staging/disposition; non-success has zero attempts.
+- [ ] B1 atomically owns the final exact alias, every canonical producer/adapter
+      migration, final producer set, both success adapters, pending `LocalCommit`, and
+      named-channel staging/disposition; no intermediate broken revision exists.
 - [ ] B2 wholly owns typed post-commit failure and complete error-receipt adaptation.
 - [ ] B3 canonical expected-old CAS/refusal/resync is GREEN before B4 consumes it.
 - [ ] Both B4 compensation paths run PRIMARY→COORD as applicable under one continuously
@@ -887,7 +911,8 @@ weakening historical evidence.
 - [ ] LocalCommit/SaaS/offline/dossier effects have zero attempts before local commit
       and on every non-success; best-effort channel failure does not stop later channels.
 - [ ] Registered-CLI and direct Mission Management real-Git proof layers pass.
-- [ ] Receipt producer gate is non-vacuous, shrink-only, and self-mutating.
+- [ ] Receipt producer gate is non-vacuous and shrink-only; mutation probes use only
+      collision-safe disposable explicit-root copies and canonical hashes stay fixed.
 - [ ] Frozen witness, historical approvals/activity, shared-file exception, lane-d,
       topology, DRAFT PR, and operator-only merge boundary remain intact.
 
@@ -969,12 +994,14 @@ canonical placement all tell the same story.
 
 Use a reviewer profile distinct from the implementer and reject unless:
 
-1. Rejected commits and any correction audit are non-authorizing; Wave A/B RED→behavior
-   ordering and prior-slice GREEN evidence are complete with no frozen-witness drift.
-2. Wave A scaffold is the exact mutation-free two-file AST/diff allowlist and immediately
-   raises unavailable before every prohibited boundary.
-3. B1 alone owns exact PRIMARY+COORD success adapters, first-terminal evaluation,
-   held-lock lifecycle behavior, and pending `LocalCommit`/channel staging/disposition.
+1. All three rejected commits remain non-authorizing; mandatory corrected Wave A and
+   B1–B5 RED→behavior ordering is complete with no frozen-witness drift.
+2. Corrected Wave A is the exact two-file remediation: legacy `CommitReceipt` remains
+   distinct/compatible, future types remain available, and review raises unavailable
+   before every prohibited boundary. Mutation probes touch only disposable roots.
+3. B1 atomically switches the exact alias with every producer migration and final
+   producer gate, and alone owns PRIMARY+COORD success adapters, first-terminal
+   evaluation, held-lock lifecycle behavior, and pending channel staging/disposition.
 4. B2 alone owns post-commit failure/error receipt; Git stays coordination-type-free
    and default non-composite behavior remains byte-compatible.
 5. B3 CAS/refusal/post-CAS resync is proven independently before B4 compensation uses
