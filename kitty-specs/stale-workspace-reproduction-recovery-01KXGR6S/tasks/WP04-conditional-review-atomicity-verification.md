@@ -69,7 +69,6 @@ owned_files:
 - src/specify_cli/sync/local_commit.py
 - tests/agent/test_workflow_review_lane_gate.py
 - tests/architectural/test_review_receipt_producer_gate.py
-- tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py
 - tests/specify_cli/cli/commands/test_workspace_husk_resolution_1833.py
 - tests/specify_cli/coordination/test_commit_router_partition.py
 - tests/specify_cli/coordination/test_status_transition.py
