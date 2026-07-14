@@ -2,7 +2,7 @@
 
 ## Inputs
 
-- One canonical `ResolvedWorkspace` produced from persisted context and current lane assignment.
+- One canonical reconciled workspace classification produced from persisted context, current lane assignment, and branch inventory for entry points that require workspace readiness. `mark-status` does not resolve a lane workspace.
 - Entry-point identity: `mark-status`, `move-task`, or `agent action review`.
 - Pre-command snapshots for status, tracking files, refs/commit path sets, locks/paths, and checkout porcelain.
 
@@ -21,11 +21,15 @@
 |---|---|---|
 | `mark-status` | PRIMARY tasks tracking commit only; no status/lane/worktree delta | Zero durable delta; structured non-zero result if its own commit cannot land |
 | `move-task` | Expected status event/materialization plus PRIMARY WP commit; all owning refs clean | Zero durable delta when workspace readiness is required and unavailable; never success plus commit warning |
-| `agent action review` | Workspace ready first, then review claim/status and PRIMARY WP evidence at owning placements | No claim event, WP mutation, ref movement, lock, created path, or dirt |
+| `agent action review` | Workspace ready first, then review claim/status and PRIMARY WP evidence through the existing partition-aware commit router | No claim event, WP mutation, ref movement, lock, created path, or dirt; invocation-owned recovery resources are compensated on later failure |
 
 ## Test Prohibitions
 
-The acceptance witness may not patch or replace `resolve_workspace_for_wp`, `commit_for_mission`, `safe_commit`, status emission/materialization, or the CLI entry point. It serializes a real workspace context, clears relevant caches, and enters through Typer with a real temporary Git repository.
+The acceptance witness may not monkeypatch any production symbol, Git/subprocess call, root/target discovery, placement resolution, lifecycle sync, commit/status path, or CLI entry point. It may only use canonical fixture serialization, environment isolation, and cache clearing before entering the registered Typer surface with a real temporary Git repository and genuine Git worktrees.
+
+## Disposition Record
+
+Every entry-point × workspace-state row records baseline SHA, exact argv, prerequisites, classification, RED/GREEN, all six before/after surfaces, reached owner, and `stop`/`continue`. Production changes are authorized only for RED/continue rows.
 
 ## Output
 

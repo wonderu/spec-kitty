@@ -22,9 +22,9 @@ The three reported entry points have distinct owners:
 
 Use one real persisted-context fixture and one six-surface observation contract across entry points. Do not build a shared stale-workspace implementation seam unless the RED witness proves a shared owner. This preserves FR-007 and avoids absorbing #2160.
 
-### D2 — Resolve and establish readiness before mutation
+### D2 — Resolve and establish readiness before mutation where required
 
-Each affected command obtains one `ResolvedWorkspace` result before durable mutation. Review passes that same value through readiness/materialization and execution; lifecycle helpers do not recompose a competing branch/path from `lanes.json`.
+Each command path that already requires an execution workspace obtains one reconciled `ResolvedWorkspace` result before durable mutation. Review passes that same value through readiness/materialization and execution; lifecycle helpers do not recompose a competing branch/path from `lanes.json`. `mark-status` remains workspace-free and proves stale lane metadata is irrelevant to TASKS_INDEX routing.
 
 ### D3 — Recovery classification
 
@@ -41,7 +41,7 @@ The witness snapshots:
 5. lock files and missing-path existence;
 6. porcelain for every relevant checkout.
 
-No patch may intercept `resolve_workspace_for_wp`, `commit_for_mission`, `safe_commit`, status emission, or the command entry point. Fixture construction may use canonical context serialization, after which caches are cleared and the real Typer surface is invoked.
+The acceptance witness allows no production monkeypatching. Fixture construction may use canonical serializers, environment isolation, and cache clearing; the registered Typer command, root discovery, placement, lifecycle, commit/status, and Git subprocess paths all remain real.
 
 ## Candidate REDs
 

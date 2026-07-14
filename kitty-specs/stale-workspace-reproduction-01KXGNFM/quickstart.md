@@ -3,7 +3,7 @@
 ## Planning-base witness
 
 ```bash
-PWHEADLESS=1 uv run --extra test pytest <focused-stale-workspace-test> -q --tb=short
+PWHEADLESS=1 uv run --extra test pytest tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py -q --tb=short
 ```
 
 Record separately the recoverable matching-branch result, branch-plus-worktree-absent result, divergent-context result, and per-entry-point six-surface deltas.
@@ -17,4 +17,4 @@ uv run mypy --strict <touched-source-files>
 PWHEADLESS=1 uv run --extra test pytest tests/architectural/test_no_legacy_terminology.py -q
 ```
 
-Tasks replace placeholders with exact files. Full gates run at Mission closeout.
+The acceptance test contains no production monkeypatching. Full gates run at Mission closeout.

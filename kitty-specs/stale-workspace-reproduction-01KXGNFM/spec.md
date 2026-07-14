@@ -100,7 +100,7 @@ Operators whose lane and coordination worktrees exist continue to receive the cu
 | C-005 | Issue boundary | #2160 and #2367 are adjacent, already-owned authority/race mechanisms; this Mission treats them as references and changes their mechanisms only if the #2626 reproduction proves the same owning seam, the plan records the fold explicitly, and ownership is coordinated. | Scope | High | Open |
 | C-006 | Draft PR workflow | All changes reach `origin/main` only through a DRAFT PR; the human operator alone may mark ready or merge. | Governance | High | Open |
 | C-007 | Production-shaped fixture | The required witness uses the reported relative `.worktrees/...` record with an absent directory. Malformed, outside-repository, and speculative platform-shaped records are non-goals unless discovered on the exact live path. | Scope | High | Open |
-| C-008 | Resolve once before mutation | Each affected command MUST obtain one canonical resolved-workspace result before durable mutation and pass that result through readiness, recovery, and execution. Lifecycle helpers and call sites MUST NOT independently recompose a competing path or branch. | Architecture | High | Open |
+| C-008 | Resolve once where workspace is required | Each command path whose existing owner requires execution-workspace readiness MUST obtain one canonical resolved-workspace result before durable mutation and pass that result through readiness, recovery, and execution. Lifecycle helpers and call sites MUST NOT independently recompose a competing path or branch. `mark-status` is a workspace-free negative control and MUST NOT gain lane-workspace resolution. | Architecture | High | Open |
 
 ### Key Entities
 

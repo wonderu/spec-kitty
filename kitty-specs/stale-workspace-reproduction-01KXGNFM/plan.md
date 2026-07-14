@@ -12,7 +12,7 @@ Build one real-Git, real-CLI persisted-workspace fixture that classifies #2626 p
 **Language/Version**: Python 3.11+
 **Primary Dependencies**: Typer CLI, Git CLI/subprocess boundary, `mission_runtime` placement seam, Spec Kitty status/workspace/lane modules
 **Storage**: Repository files (`meta.json`, `lanes.json`, persisted workspace JSON, status JSONL/materialization, Markdown tracking) and Git refs/worktrees
-**Testing**: Pytest with real temporary Git repositories and Typer command entry points; focused unit/integration characterization plus architectural guards
+**Testing**: Pytest module `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py` with real temporary Git repositories, genuine Git worktrees, and registered Typer command entry points; focused unit/integration characterization plus architectural guards
 **Target Platform**: Linux, macOS, and Windows 10+ through existing platform-neutral Git/path abstractions
 **Project Type**: Python CLI monorepo
 **Performance Goals**: Non-recoverable stale workspace refused before side effects within 2 seconds in the focused fixture
@@ -72,7 +72,7 @@ No charter violations are planned.
 
 ### IC-01 — Real persisted-context witness
 
-- **Purpose**: Reproduce and classify every reported entry point without patching away workspace, commit, or status authority.
+- **Purpose**: Reproduce and classify every reported entry point without any production monkeypatching; only canonical fixture serialization, environment isolation, and cache clearing are allowed.
 - **Relevant requirements**: FR-001, FR-002, FR-003, FR-007, NFR-001
 - **Affected surfaces**: `tests/specify_cli/cli/commands/agent/`, existing Git/CLI test helpers
 - **Sequencing/depends-on**: none
@@ -80,27 +80,27 @@ No charter violations are planned.
 
 ### IC-02 — Disposition gate and ownership matrix
 
-- **Purpose**: Separate already-green negative controls/recoverable arms from current REDs and bind each RED to its existing owner.
+- **Purpose**: Emit an authoritative disposition matrix and separate already-green negative controls/recoverable arms from current REDs before binding each RED to its existing owner.
 - **Relevant requirements**: FR-003, FR-007, FR-009, C-005, C-007
 - **Affected surfaces**: `research.md`, the transition contract, witness results
 - **Sequencing/depends-on**: IC-01
-- **Risks**: Treating all commands uniformly would manufacture a cross-command resolver and broaden #2626.
+- **Risks**: Treating all commands uniformly would manufacture a cross-command resolver and broaden #2626. Every row records baseline SHA, exact argv, state classification, RED/GREEN, six-surface delta, existing owner, and `stop`/`continue`.
 
 ### IC-03 — Review readiness before claim
 
-- **Purpose**: If review ordering is RED, resolve once and establish/materialize workspace readiness before `for_review → in_review` mutation.
+- **Purpose**: If review ordering is RED, consume one reconciled workspace classification and establish/materialize readiness before `for_review → in_review` mutation.
 - **Relevant requirements**: FR-004, FR-005, FR-006, FR-009, C-001, C-002, C-003, C-008
 - **Affected surfaces**: `src/specify_cli/cli/commands/agent/workflow.py`, `workflow_executor.py`, `workspace/context.py`, and only proven lifecycle consumers
-- **Sequencing/depends-on**: IC-02; conditional on RED
-- **Risks**: Cross-placement rollback is error-prone; prefer preflight ordering. Preserve review locks and healthy behavior.
+- **Sequencing/depends-on**: IC-02 and IC-04 when the lifecycle row is RED; otherwise IC-02. Conditional on a review RED.
+- **Risks**: Readiness has two phases: non-mutating classify/validate, then invocation-owned recovery and lock. Any later failure releases the lock and removes only a worktree proven created by this invocation. Mixed WP/status commits continue through the existing partition-aware commit router; do not invent a second placement mechanism.
 
 ### IC-04 — Lifecycle missing-authority diagnostics
 
-- **Purpose**: If branch-plus-worktree absence is RED, prevent missing-directory Git probes and return one actionable structured refusal from the resolved workspace.
+- **Purpose**: If branch-plus-worktree absence or divergence is RED, make the canonical workspace seam reconcile persisted context with current lane assignment and return ready/recoverable/unavailable/divergent before any cwd-bound probe.
 - **Relevant requirements**: FR-005, FR-006, FR-008, FR-009, NFR-004, C-008
 - **Affected surfaces**: `src/specify_cli/lanes/lifecycle_sync.py` and focused integration tests
-- **Sequencing/depends-on**: IC-02; conditional on RED
-- **Risks**: Lifecycle path recomposition would preserve split authority; no directory fabrication or arbitrary branch creation.
+- **Sequencing/depends-on**: IC-02; conditional on a lifecycle/reconciliation RED; precedes IC-03 when both activate
+- **Risks**: Thread the same resolved identity into lifecycle sync instead of recomposition; no directory fabrication or arbitrary branch creation.
 
 ### IC-05 — Cross-surface regression evidence
 
@@ -112,11 +112,31 @@ No charter violations are planned.
 
 ## Execution Strategy
 
-1. Land IC-01 as a test-only commit and capture the planning-base RED/GREEN matrix.
-2. Stop production implementation if all exact #2626 arms are green; update Mission evidence only.
-3. For each RED, write its owner and expected delta into the disposition matrix before editing production code.
-4. Implement the smallest conditional concern, keeping readiness pre-mutation and passing one resolved workspace through the call path.
-5. Run IC-05, independent WP review, Mission acceptance/review, and keep PR #2641 DRAFT.
+1. Land IC-01 as a test-only commit. Parameterize healthy, matching-branch recoverable, branch-absent, and persisted-context-divergent states for each entry point using exact registered CLI argv and healthy positive-control twins.
+2. Produce the disposition matrix with baseline SHA, exact command, classification, RED/GREEN, six-surface delta, reached owner, and `stop`/`continue` for every row.
+3. If every row is green, stop production implementation. Mixed verdicts activate production work only for rows marked RED/continue.
+4. If lifecycle/reconciliation is RED, implement IC-04 first. If review ordering is RED, implement IC-03 after IC-04 when activated, otherwise directly after IC-02.
+5. Run IC-05 after every activated remediation concern, then independent WP review and Mission closeout while PR #2641 stays DRAFT.
+
+## Acceptance Witness Matrix
+
+**Test module**: `tests/specify_cli/cli/commands/agent/test_stale_workspace_transition_contract.py`
+
+| Entry point | Exact argv | Required starting state |
+|---|---|---|
+| `mark-status` | `agent tasks mark-status T001 --status done --mission <slug> --json` | `tasks.md` contains pending T001; stale lane context exists but must remain irrelevant |
+| `move-task` | `agent tasks move-task WP01 --to for_review --mission <slug> --agent codex --skip-pre-review-gate --json` | WP01 is `in_progress`, subtasks complete, implementation commit present, dependencies satisfied |
+| `agent action review` | `agent action review WP01 --agent codex --mission <slug>` | WP01 is `for_review`, implementation commit present, coordination topology/status materialized |
+
+Each argv runs against healthy, matching-branch/missing-worktree, branch-absent, and divergent-context rows as applicable. Before/after ref OIDs are recorded for PRIMARY, COORD, and lane refs; every commit in each OID range and its path set is enumerated. Refusal requires an empty OID range, not merely byte-equivalent files. The acceptance module may not monkeypatch any production symbol, subprocess, root/placement resolution, lifecycle, commit, or status path.
+
+## Readiness and Compensation Protocol
+
+1. **Classify without mutation**: reconcile persisted context with the current lane assignment and branch inventory into ready/recoverable/unavailable/divergent.
+2. **Acquire invocation-owned resources**: only a recoverable row may create/attach the worktree and acquire a review lock; record whether each resource was created by this invocation.
+3. **Claim/commit through existing authority**: the mixed WORK_PACKAGE_TASK/STATUS_STATE bundle continues through the existing partition-aware commit router, which splits genuinely divergent refs.
+4. **Compensate post-readiness failure**: release invocation-owned locks and remove only an invocation-created worktree when a later claim/commit fails; never remove pre-existing resources.
+5. **Proceed**: pass the same reconciled workspace identity into lifecycle/review consumers; do not resolve or compose it again.
 
 ## Rejected Alternatives
 
