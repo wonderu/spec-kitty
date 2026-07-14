@@ -8,8 +8,9 @@
 
 ## Authorization Rule
 
-This file becomes the sole row-specific production authorization checkpoint only
-after WP01 is independently approved and the orchestrator records the immutable
+This PRIMARY planning artifact becomes the sole row-specific production
+authorization checkpoint only after WP01 is independently approved and the
+orchestrator records the immutable
 baseline SHA, witness commit, reviewer, review reference, and complete rows below
 with `spec-kitty spec-commit`. Until then, WP02–WP04 must not edit production code.
 
