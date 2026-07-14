@@ -35,14 +35,6 @@ requirement_refs:
 - C-013
 - C-014
 - C-015
-plan_concern_refs:
-- IC-02
-- IC-04
-- IC-06
-- IC-07
-- IC-08
-- IC-09
-- IC-10
 tracker_refs: []
 planning_base_branch: fix/stale-workspace-reproduction
 merge_target_branch: fix/stale-workspace-reproduction
