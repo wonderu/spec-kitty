@@ -33,7 +33,6 @@ subtasks:
 - T019
 - T020
 - T021
-agent: codex
 history: []
 agent_profile: python-pedro
 authoritative_surface: src/specify_cli/cli/commands/agent/
@@ -47,6 +46,7 @@ owned_files:
 - tests/agent/test_workflow_review_lane_gate.py
 role: implementer
 tags: []
+shell_pid_created_at: "1784023781.31"
 ---
 
 # WP04 — Conditional Review Atomicity and Verification
@@ -559,3 +559,10 @@ the aggregate diff against the following questions:
 
 Approve only when the durable outcome, structured result, resource lifetime, and
 canonical placement all tell the same story.
+
+## Activity Log
+
+- 2026-07-14T18:54:19Z – codex – shell_pid=138606 – Assigned agent via action command
+- 2026-07-14T19:18:48Z – codex – shell_pid=138606 – Ready for independent review: atomic review workspace preparation and partition-aware claim commit; exact rows 9-12 and full acceptance witness green.
+- 2026-07-14T19:20:12Z – codex – shell_pid=138606 – Started review via action command
+- 2026-07-14T19:27:56Z – user – Moved to planned
