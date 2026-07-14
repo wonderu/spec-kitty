@@ -565,192 +565,170 @@ green result.
 - Ruff, strict mypy, architectural checks, terminology guard, and diff check pass.
 - Relevant worktrees are clean and the DRAFT PR boundary remains intact.
 
-### Subtask T022: Ratify the ADR and land the mandatory test-only RED contract
+### Subtask T022: Correct rejected scaffolding and land Wave A
 
-**Purpose**: Convert the reviewed scope amendment into immutable ATDD evidence before
-any new production edit.
-
-**Steps**:
-
-1. Verify `docs/adr/3.x/2026-07-14-2-cross-partition-workflow-transaction.md`
-   remains Proposed and matches FR-010 through FR-016 and C-009 through C-015.
-2. Create one test-only commit. It MUST change only the newly owned test files; it
-   MUST NOT edit production, the frozen witness, or any post-`980eae6a9` expectation.
-3. Add the receipt producer gate first with these exact nodes:
-   - `tests/architectural/test_review_receipt_producer_gate.py::test_receipt_producer_floor_is_non_vacuous`
-   - `tests/architectural/test_review_receipt_producer_gate.py::test_receipt_producer_allowlist_is_shrink_only`
-   - `tests/architectural/test_review_receipt_producer_gate.py::test_receipt_producer_gate_rejects_self_mutation`
-4. Freeze this exact initial producer floor as `(file, qualified symbol)` tuples; the
-   gate compares AST-resolved construction/adapter call sites, not text matches:
-   - (`src/specify_cli/coordination/transaction.py`,
-     `BookkeepingTransaction.commit`)
-   - (`src/specify_cli/coordination/status_transition.py`,
-     `emit_status_transition_transactional`)
-   - (`src/specify_cli/coordination/status_transition.py`,
-     `emit_status_transition_batch_transactional`)
-   - (`src/specify_cli/coordination/commit_router.py`,
-     `_commit_partition_group`)
-   The first tuple is the reviewed current constructor and the remaining tuples are
-   the only authorized Git-to-coordination adapter sites. No workflow constructor is
-   allowed. The self-mutation node MUST inject an unauthorized production call site,
-   run the gate and prove rejection, then restore the production file byte-for-byte
-   in `finally`; a synthetic test-file-only mutation is insufficient.
-5. Add these exact real-Git nodes in
-   `tests/specify_cli/status/test_review_transaction.py`:
-   - `test_missing_coord_receipt_is_compensation_failed`
-   - `test_wrong_coord_hash_is_compensation_failed`
-   - `test_duplicate_destination_receipt_is_compensation_failed`
-   - `test_mismatched_attempt_ids_are_compensation_failed`
-   - `test_unattributed_ref_movement_is_compensation_failed`
-   - `test_attempt_id_pair_is_inherited_by_all_evidence`
-   - `test_committed_requires_exact_primary_and_coord_receipts`
-   - `test_refused_has_zero_delta_and_zero_receipts`
-   - `test_non_success_has_zero_outbound_attempts[refused]`
-   - `test_non_success_has_zero_outbound_attempts[compensated]`
-   - `test_non_success_has_zero_outbound_attempts[compensation_failed]`
-   - `test_outbound_is_not_attempted_before_local_commit`
-   - `test_review_transaction_lock_order_is_resource_status_git`
-   - `test_primary_hook_failure_compensates_reverse_order`
-   - `test_foreign_coord_helper_blocks_expected_old_cas`
-   - `test_post_commit_recovery_conflict_uses_error_carried_receipt`
-   - `test_post_cas_resync_obstruction_is_compensation_failed`
-   - `test_internal_retry_reuses_invocation_id_and_rotates_transaction_id`
-   - `test_file_backed_outbound_middle_failure_continues_later_channel`
-6. Add
-   `tests/status/test_work_package_lifecycle.py::test_review_lifecycle_reuses_held_status_lock_without_implicit_commit`
-   and an architectural node
-   `tests/architectural/test_review_receipt_producer_gate.py::test_git_layer_does_not_import_coordination_receipt_types`.
-7. Use deterministic fixture-owned stimuli and assert each reached marker:
-   - conditional PRIMARY Git hook refuses the intended commit only;
-   - independent helper advances COORD before compensation;
-   - post-commit hook creates caller-state recovery conflict;
-   - expected-old transaction hook obstructs worktree resync only after CAS.
-   Every concurrent stimulus MUST use fixture-owned `ready`, `release`, and `done`
-   marker files or pipe barriers. Tests MUST embed the expected invocation ID,
-   transaction ID, before/after OIDs, and destination ref in the barrier payload;
-   assert that each marker was reached and that observed order equals the prescribed
-   order. Sleeps, polling retries, timing windows, and retry-to-green are prohibited.
-   The PRIMARY failure node additionally snapshots and asserts byte-identical
-   unrelated staged, unstaged, and untracked files, their executable modes, the full
-   index patch, and the full worktree patch before and after compensation.
-8. Add exact type/adapter nodes:
-   - `tests/specify_cli/coordination/test_types.py::test_commit_receipt_alias_has_placement_receipt_identity`
-   - `tests/specify_cli/coordination/test_commit_router_partition.py::test_composite_adapter_propagates_error_carried_receipt`
-   - `tests/specify_cli/git/test_commit_helpers.py::test_composite_deferral_returns_pending_local_commit_evidence`
-9. T022 is additive test work only: no delete, rename, skip, `xfail`, assertion
-   relaxation, fixture weakening, or frozen-witness edit is permitted. Record
-   `git diff --name-status` and an assertion/fixture audit in the RED handoff.
-10. Run this exact serial RED command on the preserved production base and record
-   every intentional failure:
-
-   ```bash
-   PWHEADLESS=1 uv run --extra test pytest -n0 -q \
-     tests/architectural/test_review_receipt_producer_gate.py \
-     tests/specify_cli/status/test_review_transaction.py \
-     tests/status/test_work_package_lifecycle.py::test_review_lifecycle_reuses_held_status_lock_without_implicit_commit \
-     tests/specify_cli/coordination/test_types.py::test_commit_receipt_alias_has_placement_receipt_identity \
-     tests/specify_cli/coordination/test_commit_router_partition.py::test_composite_adapter_propagates_error_carried_receipt \
-     tests/specify_cli/git/test_commit_helpers.py::test_composite_deferral_returns_pending_local_commit_evidence \
-     tests/specify_cli/git/test_ref_advance.py
-   ```
-
-   No new production file may change until this commit exists and the review handoff
-   includes the exact commit SHA and failing assertions.
-
-**Validation**:
-
-- The test-only commit contains no production or frozen-witness diff.
-- Every stimulus marker proves the intended real Git boundary was reached.
-- Missing COORD receipt, wrong COORD hash, duplicate destination, mismatched attempt
-  IDs, and unattributed ref movement all resolve to `compensation_failed`; committed
-  accepts only exact receipts, refused has zero delta/receipts, and every non-success
-  status has zero outbound attempts.
-- Full invocation/transaction ID-pair inheritance, outbound-after-local-commit order,
-  direct lock order, held-lock lifecycle reuse without implicit commit, and the Git
-  import boundary are executable RED contracts.
-- The producer gate and receipt/compensation/outbound contract are RED for the right
-  missing behavior, not fixture setup failure.
-
-### Subtask T023: Propagate canonical receipts, post-commit failure, and LocalCommit deferral
-
-**Purpose**: Expose one receipt identity across placement owners while keeping Git
-generic and preserving default non-composite behavior.
+**Purpose**: Establish the reviewed API/type/port surface without executing a composite
+transaction or treating rejected discovery work as authority.
 
 **Steps**:
 
-1. Define `PlacementCommitReceipt` as the sole class in
-   `coordination/types.py`; set `CommitReceipt = PlacementCommitReceipt` as an exact
-   compatibility type alias. Do not add a wrapper, subclass, duplicate dataclass, or
-   workflow-owned receipt dictionary.
-2. Include `invocation_id`, `transaction_id`, destination ref, lock-held
-   `before_sha`, commit SHA, worktree root, exact committed diff-tree paths, and event
-   IDs. All evidence for one attempt inherits the same ID pair unchanged.
-3. Add typed `PlacementCommitFailure` carrying the complete canonical receipt plus
-   primary caller-state recovery diagnostics. Compensation consumes only this embedded
-   receipt; `rev-parse`/ancestry/porcelain reconstruction is prohibited.
-4. Add an additive composite-deferral mode to `safe_commit`. It returns Git-owned
-   generic pending `LocalCommit` plus post-commit recovery evidence. Its default mode
-   and all non-composite callers remain unchanged.
-5. Git modules MUST NOT import `coordination.types`. `BookkeepingTransaction`, status
-   transition, and commit-router placement owners adapt generic Git evidence into the
-   canonical receipt/failure.
-6. Make the receipt-returning status/lifecycle seam consume the already-held status
-   lock and transaction; it MUST NOT reacquire either or commit implicitly after return.
-7. Extend `coordination/outbound.py`, `BookkeepingTransaction.defer_outbound` /
-   `_run_deferred_outbound`, and `sync/local_commit.py` so composite mode stages
-   LocalCommit persistence/send together with SaaS, offline queue, and dossier effects.
-   Non-success discards all staged effects; default non-composite behavior is unchanged.
+1. Record commits `7e8f6f579` and `52d5f02ab` as **rejected, non-authorizing
+   discovery evidence**. Their code, expectations, producer set, and green results do
+   not satisfy any gate and MUST NOT be copied forward as reviewed behavior.
+2. One optional test-only correction commit MAY replace or delete test scaffolding
+   introduced by those commits. It MUST NOT edit production, frozen witness rows,
+   relax assertions/fixtures, or claim RED. Record its SHA, `git diff --name-status`,
+   deleted/replaced nodes, and assertion/fixture audit separately from ATDD evidence.
+3. Land the Wave A test-only API/type/port RED commit. It pins the sole
+   `PlacementCommitReceipt`, exact `CommitReceipt = PlacementCommitReceipt` identity,
+   data-only `PlacementCommitFailure`, four-value result vocabulary, Mission Management
+   entry signature, owner ports, producer allowlist, Git import boundary, and
+   `CompositeImplementationUnavailable`. Production is unchanged in this commit.
+4. The Wave A RED MUST include the non-vacuous/shrink-only/self-mutation producer gate,
+   alias identity, Git-no-coordination-import check, and AST checks for the exact
+   scaffold. Self-mutation injects an unauthorized production producer, proves
+   rejection, and restores the file byte-for-byte in `finally`.
+5. Land a separate mutation-free scaffold behavior commit whose production diff is
+   allowlisted to exactly two files:
+   - `src/specify_cli/coordination/types.py`: data-only
+     `PlacementCommitReceipt`, exact alias, and data-only `PlacementCommitFailure`;
+   - `src/specify_cli/status/review_transaction.py`: enums, frozen dataclasses,
+     protocols, public entry signature, and `CompositeImplementationUnavailable`.
+6. The AST/diff allowlist MUST reject every other production path and any executable
+   scaffold behavior. The entry immediately raises
+   `CompositeImplementationUnavailable` before resource creation/attachment, any
+   resource/review/status/Git lock, owner/ref call, delta, receipt, pending outbound,
+   channel, or retry. It returns no terminal result. Prohibit `__init__.py` exports,
+   workflow wiring, Git/status/router/outbound calls, hidden fallback, compatibility
+   execution, owner construction, ref inspection/movement, and terminal return.
+7. Run Wave A tests serially, record RED then GREEN SHAs/assertions, and prove the
+   scaffold's production diff and AST exactly match the allowlist. Do not begin B1
+   until Wave A is GREEN.
 
 **Validation**:
 
-- Alias identity is exact and the producer gate contains only reviewed producers.
-- A commit-created recovery failure exposes its complete error-carried receipt.
-- Git has no import edge to `coordination.types`.
-- Default safe-commit and LocalCommit regressions are byte-compatible.
+- Correction evidence is explicitly non-RED and rejected commits remain non-authorizing.
+- Wave A has test-only RED before its separate two-file scaffold behavior commit.
+- The unavailable entry is observably mutation-free and the AST/diff gate is exact.
+- Active IDs, frontmatter ownership, lane-d, topology, frozen witness, and history are
+  unchanged.
 
-### Subtask T024: Implement the Mission Management composite and reverse CAS compensation
+### Subtask T023: Land B1 first-terminal foundation and B2 error receipt adaptation
 
-**Purpose**: Make Mission Management the sole review transaction owner and produce one
-truthful typed local result.
+**Purpose**: Make the first truthful terminal outcomes possible, then add the sole
+typed post-commit failure seam. Each slice is exactly test-only RED then behavior.
 
 **Steps**:
 
-1. Add `status/review_transaction.py`. Workflow mints one `invocation_id` at the
-   registered boundary; Mission Management mints one unique `transaction_id` per
-   attempt. Internal retry retains invocation ID and rotates transaction ID.
-2. Enforce this exact lock order: review workspace/resource lock → sole outer
-   `status.locking.feature_status_lock` → Git worktree/index locks.
-   `BookkeepingTransaction` is transaction scope entered while that status lock is
-   already held; it has no internal lock and MUST NOT acquire/reacquire one. Add no
-   composite lock.
-3. Hold the status lock through terminal ref/caller-state observation. Expected-old
-   CAS runs under that lock but still guards against foreign Git writers.
-4. Snapshot every staged/index/worktree/untracked path `safe_commit` may temporarily
-   mutate, including unrelated sentinels. Preserve bytes, executable modes, the full
-   index patch, and the full worktree patch for unrelated staged, unstaged, and
-   untracked state. A non-owned caller-state mismatch is `compensation_failed`.
-5. Commit COORD status and PRIMARY tracking through existing owners. Success requires
-   the exact canonical receipt set; missing/unattributed movement is indeterminate
-   `compensation_failed`, never `refused`.
-6. On later failure, compensate every invocation-owned landed placement in reverse
-   order, including an error-carried PRIMARY receipt. Extend canonical
-   `git/ref_advance.py` with expected-old CAS; resync checked-out worktrees only after
-   CAS. Foreign advance, failed restore, or post-CAS resync obstruction is
-   `compensation_failed` with repair evidence.
-7. Return typed in-process `CompositeWorkflowResult` with `committed`, `refused`,
-   `compensated`, or `compensation_failed`. Do not add a public JSON option or persisted
-   result artifact.
-8. Only local `committed` releases staged outbound. A configured file-backed,
-   offline/local capture sink makes the middle channel fail, records retryable
-   `dispatch_failed`, and proves a later channel records `dispatch_succeeded`; local
-   outcome remains committed. Every non-success outcome has zero attempts.
+1. **B1 test-only RED commit**: through real PRIMARY/COORD owners, pin all of:
+   - exact two-receipt `committed` and under-lock `refused` with zero delta, receipts,
+     lower-seam commits, and outbound attempts;
+   - missing COORD receipt, wrong hash, duplicate destination, mismatched IDs,
+     unattributed movement, and the complete negative matrix as
+     `compensation_failed`;
+   - result/receipt/evidence inheritance of one invocation/transaction ID pair;
+   - real resource/review → `feature_status_lock` → Git entry/exit order, one outer
+     status-lock acquisition, lifecycle reuse of the held lock/transaction, and no
+     implicit lower-seam commit;
+   - Git-owned pending `LocalCommit` plus every named outbound intent staged before
+     mutation; committed is only releasable after local terminal, while refused and
+     every non-success discard/suppress with zero persistence/send/delivery attempts;
+   - byte-compatible default non-composite safe-commit and `LocalCommit` behavior.
+   On Wave A, this RED MAY stop at explicit unavailable, but instrumentation must prove
+   zero locks, owners, refs, lower-seam commits, outbound evidence, or retry before it.
+2. **B1 behavior commit**: implement only prepare, pre-mutation deferral/staging and
+   disposition, fixed lock/lifecycle seam, real owners, both complete canonical
+   PRIMARY and COORD success Git-evidence→receipt adapters, receipt/identity evaluator,
+   and typed `committed`/`refused`/indeterminate `compensation_failed`. B1 wholly and
+   solely owns both success adapters. It performs no retry, compensation, persistence/
+   send, or delivery. Rerun Wave A and B1 GREEN before B2.
+3. **B2 test-only RED commit**: drive the real Git commit seam through post-commit
+   caller-state recovery failure. Require the placement owner to raise
+   `PlacementCommitFailure` carrying the complete receipt and recovery diagnostic;
+   assert unrelated staged/unstaged/untracked bytes, modes, full index patch, and full
+   worktree patch. A hook is stimulus only and records a reached marker.
+4. **B2 behavior commit**: add generic Git post-commit evidence, caller-state capture/
+   restore, and the sole Git-evidence→`PlacementCommitFailure` adapter with complete
+   error-receipt propagation. Git remains coordination-type-free. No later slice may
+   add/change an adapter or claim a fresh RED for this behavior. Rerun Wave A, B1, and
+   B2 GREEN before T024.
+
+**Non-fakeable RED rule**:
+
+- Production owners are never monkeypatched. Direct typed evaluator cases use typed
+  I/O; real-owner cases must reach the named production boundary. Hooks/helpers inject
+  stimuli only. A fixture/setup failure, unobserved hook, synthetic receipt producer,
+  test-only fake owner, or post-B1 unavailable failure does not authorize behavior.
 
 **Validation**:
 
-- Lock-order and no-reacquisition tests pass.
-- All four deterministic real-Git stimulus nodes pass and their markers are asserted.
-- The internal-retry adapter test proves one invocation ID and distinct transaction IDs.
-- Ref, caller-state, resource, terminal, and outbound contracts match the spec exactly.
+- Each B1/B2 test commit precedes exactly one behavior commit and all prior slices stay
+  GREEN.
+- B1 alone can produce truthful first terminals and owns both success adapters plus
+  `LocalCommit` deferral/staging.
+- B2 alone owns typed post-commit failure and its complete error receipt.
+
+### Subtask T024: Land B3 CAS, B4 compensation, and B5 retry/delivery
+
+**Purpose**: Add the canonical compensation primitive before consuming it, then finish
+Mission Management retry and post-commit delivery. Each slice is exactly RED→behavior.
+
+**Steps**:
+
+1. **B3 test-only RED commit**: exercise `git/ref_advance.py` with real refs/worktrees;
+   prove expected-old CAS success, foreign-advance refusal without overwrite, and
+   checked-out-worktree resync only after CAS. Only genuinely concurrent foreign-writer
+   and synchronized post-CAS obstruction cases use deterministic fixture-owned
+   `ready`/`release`/`done` files or pipes carrying destination ref and relevant OIDs;
+   assert reached/order. No sleeps, timing windows, polling retry, or retry-to-green.
+2. **B3 behavior commit**: implement canonical expected-old CAS plus post-CAS resync
+   with exact ref/worktree/repair evidence. Never force over a foreign OID. Rerun Wave
+   A and B1–B3 GREEN before B4.
+3. **B4 test-only RED commit**: cover both composite paths:
+   - pre-commit PRIMARY refusal after COORD lands compensates the COORD receipt;
+   - reuse B2's error-carried PRIMARY receipt after both placements land, consume it
+     without reconstruction, and compensate strict PRIMARY→COORD.
+   Assert exact terminal refs/resources/caller state; mismatch is
+   `compensation_failed`. Instrument the real outer `feature_status_lock`: the same
+   continuously held instance spans every reverse CAS, successful-CAS resync, and
+   terminal observation with no release/reacquisition or lower-seam reacquisition.
+4. **B4 behavior commit**: compose B2 receipt propagation with B3 CAS/resync under that
+   continuously held lock. Add no adapter, private ref mutation, receipt
+   reconstruction, or B1/B2 adapter change. Rerun Wave A and B1–B4 GREEN before B5.
+5. **B5 test-only RED commit**: prove workflow invokes Mission Management once with
+   resolved identity + invocation ID. Mission Management alone retries only private
+   `RetryablePreDurablePrepareConflict`, raised before resource creation/attachment,
+   any resource/review/status/Git lock, owner/ref/delta, receipt, pending outbound,
+   compensation, or channel attempt. Retry retains only invocation ID, mints a fresh
+   transaction ID, and begins with empty receipt/compensation/outbound/channel/resource/
+   owner state; assert no evidence leak. All terminal, post-lock, and post-durable
+   outcomes are never retried. Use typed evidence/counters, not concurrency barriers.
+   Also prove committed-only delivery, zero non-success attempts, middle-channel
+   `dispatch_failed`, and later-channel `dispatch_succeeded` without changing local
+   committed.
+6. **B5 behavior commit**: Mission Management owns the private prepare retry loop;
+   workflow calls once. Prepare runs before resource creation/attachment and all locks.
+   After success, create/attach owned resources then acquire resource/review lock →
+   `feature_status_lock` → Git locks with no remaining retry boundary. Add only internal
+   retry and post-commit per-channel delivery. B1 `LocalCommit` deferral/staging and B2
+   error receipt are regression-only. Preserve the four-value terminal vocabulary and
+   default non-composite behavior. Rerun every Wave A/B slice GREEN.
+
+**Non-fakeable RED rule**:
+
+- B3 concurrent stimuli use barriers; deterministic CAS evaluation, B4 hook failures,
+  B5 retry, and delivery use real boundaries plus typed evidence/counters/simple
+  reached markers. Production owners are never monkeypatched. Every RED after B1 must
+  reach its named production boundary; an unavailable/setup/fake-owner failure is not
+  implementation authority.
+
+**Validation**:
+
+- B3 is GREEN before B4 consumes CAS/resync; B4 is GREEN before B5.
+- Every test-only RED commit precedes its one behavior commit and all prior slices are
+  rerun GREEN.
+- Continuous-lock compensation, fresh retry state, terminal no-retry, and committed-
+  only delivery match plan `63c3a982` exactly.
 
 ### Subtask T025: Run aggregate two-layer proof and architectural gates
 
@@ -759,17 +737,28 @@ weakening historical evidence.
 
 **Steps**:
 
-1. Registered-CLI real-Git layer: run the unchanged 12-row witness plus focused
+1. Audit the exact commit chain: optional rejected-scaffold correction (never RED),
+   Wave A test RED → two-file scaffold, then B1 RED → behavior, B2 RED → behavior,
+   B3 RED → behavior, B4 RED → behavior, and B5 RED → behavior. For every pair record
+   SHAs, failing/passing assertions, `git diff --name-status`, production/test paths,
+   and proof all earlier slices were GREEN before the next RED.
+2. Re-run the Wave A AST/diff allowlist against its scaffold commit and current tree.
+   Prove the original scaffold touched only the two authorized files and contained no
+   prohibited call/wiring/export/terminal behavior. Preserve `7e8f6f579` and
+   `52d5f02ab` as rejected/non-authorizing evidence and keep any correction audit
+   separate from RED evidence.
+3. Registered-CLI real-Git layer: run the unchanged 12-row witness plus focused
    workspace/workflow tests. Prove operator output, durable refs/bytes/index/worktrees,
    clean refusal, and zero outbound attempts on non-success.
-2. Direct Mission Management real-Git layer: run every
+4. Direct Mission Management real-Git layer: run every
    `tests/specify_cli/status/test_review_transaction.py` node and inspect typed result,
    ID inheritance, receipts, `PlacementCommitFailure`, reverse compensation, unrelated
-   sentinels, terminal under-lock observations, and per-channel delivery evidence.
-3. Run all owned coordination, Git, sync, workflow, and workspace tests. Include real
+   sentinels, continuous-lock terminal observations, fresh retry attempts with no
+   evidence leakage, and per-channel delivery evidence.
+5. Run all owned coordination, Git, sync, workflow, and workspace tests. Include real
    adapter regressions for `coordination/outbound.py`, transaction deferred outbound,
    and `sync/local_commit.py`.
-4. Run this exact serial focused GREEN command. It covers every WP04-owned test path,
+6. Run this exact serial focused GREEN command. It covers every WP04-owned test path,
    the frozen witness, and the complete WP02/WP03 regression floor:
 
    ```bash
@@ -797,7 +786,7 @@ weakening historical evidence.
      tests/integration/test_lane_lifecycle_sync.py
    ```
 
-5. Run Ruff across every owned Python path:
+7. Run Ruff across every owned Python path:
 
    ```bash
    uv run ruff check \
@@ -829,7 +818,7 @@ weakening historical evidence.
      tests/status/test_work_package_lifecycle.py
    ```
 
-6. Run strict mypy on every owned production target:
+8. Run strict mypy on every owned production target:
 
    ```bash
    uv run mypy --strict \
@@ -847,7 +836,7 @@ weakening historical evidence.
      src/specify_cli/sync/local_commit.py
    ```
 
-7. Run the new producer gate plus the shared-package and terminology gates, then the
+9. Run the new producer gate plus the shared-package and terminology gates, then the
    whitespace/error check, using these exact commands:
 
    ```bash
@@ -857,27 +846,42 @@ weakening historical evidence.
      tests/architectural/test_no_legacy_terminology.py
    git diff --check
    ```
-8. Verify the frozen witness blob and post-`980eae6a9` diff are unchanged; verify the
+10. Verify the frozen witness blob and post-`980eae6a9` diff are unchanged; verify the
    WP02 shared-file exception remained limited to the two named files and its approved
    blob/ref still matches.
-9. Verify all relevant worktrees are clean and PR #2641 remains DRAFT. Report exact
-   RED/GREEN commit SHAs, commands, counts, stimulus markers, receipt producer set,
-   caller-state sentinels, and outbound channel evidence to the independent reviewer.
+11. Verify all relevant worktrees are clean and PR #2641 remains DRAFT. Report exact
+   correction/Wave/slice commit SHAs, commands, counts, real-boundary and concurrent
+   stimulus markers, receipt producer set, scaffold AST/diff audit, continuous-lock
+   trace, caller-state sentinels, fresh-retry-state proof, and channel evidence to the
+   independent reviewer.
 
 **Validation**:
 
 - Both real-Git layers pass without a public JSON or persisted result artifact.
+- Every Wave A/B RED precedes its behavior, all prior slices remain GREEN, and every
+  applicable real boundary/stimulus marker is reached.
 - Historical approvals, rows 1–8, witness expectations, lane-d, and topology remain
   unchanged.
 - All quality, architectural, ownership-exception, and DRAFT-PR gates pass.
 
 ## Amendment Definition of Done
 
-- [ ] T022 test-only RED commit predates every amendment production edit.
+- [ ] Rejected `7e8f6f579`/`52d5f02ab` remain non-authorizing; any correction commit
+      is test-only, audited, and never represented as RED.
+- [ ] Wave A and each B1–B5 test-only RED precede exactly one authorized behavior
+      commit, with all prior slices GREEN.
+- [ ] Wave A scaffold is mutation-free and its AST/diff touches exactly the two
+      allowlisted production files/surfaces.
 - [ ] `PlacementCommitReceipt` is the sole class and `CommitReceipt` is its exact alias.
 - [ ] Git remains independent of coordination receipt types.
-- [ ] Mission Management owns one attempt under the fixed lock order with no new lock.
-- [ ] Error-carried receipts drive reverse expected-old CAS compensation.
+- [ ] B1 wholly owns both success adapters plus pending `LocalCommit` and named-channel
+      pre-mutation staging/disposition; non-success has zero attempts.
+- [ ] B2 wholly owns typed post-commit failure and complete error-receipt adaptation.
+- [ ] B3 canonical expected-old CAS/refusal/resync is GREEN before B4 consumes it.
+- [ ] Both B4 compensation paths run PRIMARY→COORD as applicable under one continuously
+      held status lock through CAS, resync, and terminal observation.
+- [ ] Mission Management alone owns the B5 pre-durable prepare retry; workflow calls
+      once, only invocation ID survives, and no post-lock/post-durable outcome retries.
 - [ ] All safe-commit-affected caller state, including unrelated sentinels, is restored
       or the result is `compensation_failed`.
 - [ ] LocalCommit/SaaS/offline/dossier effects have zero attempts before local commit
@@ -965,27 +969,27 @@ canonical placement all tell the same story.
 
 Use a reviewer profile distinct from the implementer and reject unless:
 
-1. T022 is a test-only RED commit preceding every amendment production edit, with no
-   frozen-witness diff after `980eae6a9`.
-2. `PlacementCommitReceipt` is the sole class, `CommitReceipt` is the exact alias, and
-   the producer gate rejects workflow/unauthorized constructors.
-3. Git exposes generic pending `LocalCommit`/recovery evidence without importing
-   coordination types or changing default behavior.
-4. The exact lock order is preserved, the lower status seam does not reacquire the
-   status lock/transaction, and no composite lock exists.
-5. Compensation consumes only canonical or error-carried receipts in reverse order and
-   expected-old CAS/resync evidence distinguishes every terminal outcome truthfully.
-6. All unrelated caller-state sentinels restore exactly or produce
-   `compensation_failed`.
-7. LocalCommit/SaaS/offline/dossier adapters have zero attempts before local commit and
-   on non-success; the configured middle failure does not stop later success.
-8. Registered-CLI and direct Mission Management real-Git layers, deterministic stimulus
-   markers, internal-retry IDs, producer gate, Ruff, mypy, and architectural checks all
-   pass.
-9. The WP02 shared-file exception is limited to its two named files and its frozen
-   approved blob/ref; lane-d/topology and all prior approvals/activity remain unchanged.
-10. No public JSON result surface, persisted result artifact, topology recomputation,
-    or non-DRAFT PR transition was introduced.
+1. Rejected commits and any correction audit are non-authorizing; Wave A/B RED→behavior
+   ordering and prior-slice GREEN evidence are complete with no frozen-witness drift.
+2. Wave A scaffold is the exact mutation-free two-file AST/diff allowlist and immediately
+   raises unavailable before every prohibited boundary.
+3. B1 alone owns exact PRIMARY+COORD success adapters, first-terminal evaluation,
+   held-lock lifecycle behavior, and pending `LocalCommit`/channel staging/disposition.
+4. B2 alone owns post-commit failure/error receipt; Git stays coordination-type-free
+   and default non-composite behavior remains byte-compatible.
+5. B3 CAS/refusal/post-CAS resync is proven independently before B4 compensation uses
+   it; only actual concurrent B3 stimuli use ready/release/done barriers.
+6. B4 proves both compensation paths, no receipt reconstruction, caller-state fidelity,
+   strict reverse order, and one continuously held outer status lock through terminal.
+7. B5 proves one workflow call, Mission Management-only pre-durable prepare retry,
+   fresh attempt state, no evidence leak, no terminal/post-lock/post-durable retry, and
+   committed-only best-effort delivery with later-channel continuation.
+8. Registered-CLI/direct real-Git layers, all boundary/stimulus markers, producer gate,
+   Ruff, strict mypy, architecture/terminology gates, and diff check pass.
+9. The WP02 shared-file exception, lane-d/topology, prior approvals, historical T016–
+   T021 text, and activity lines remain unchanged.
+10. No public JSON result, persisted result artifact, topology recomputation, non-DRAFT
+    PR transition, or operator-only merge-boundary violation was introduced.
 
 ## Activity Log
 
